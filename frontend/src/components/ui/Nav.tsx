@@ -9,7 +9,6 @@ function Nav(){
         </div>
         <div className="flex items-center gap-6">
           <Link to="/chat" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Chat</Link>
-          <Link to="/components" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Design_System</Link>
           <Button to="/login" variant="primary" className="px-6 py-2">
             LOGIN // JOIN
           </Button>
