@@ -1,0 +1,79 @@
+[
+    {
+        "id": 1,
+          "firstname": "mouad",
+          "lastname": "mouad",
+          "username": "mouad",
+          "email": "mouad@gmail.com",
+          "password": "mouad",
+          "photo": "https://dummyjson.com/icon/mouad/128",
+          "bio": "loves coding & coffee",
+          "role": "user" 
+    },
+    {
+        "id": 2,
+        "firstname": "ayoub",
+        "lastname": "ayoub",
+        "username": "ayoub",
+        "email": "ayoub@gmail.com",
+        "password": "ayoub",
+        "photo": "https://dummyjson.com/icon/ayoub/128",
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    },
+    {
+        "id": 3,
+        "firstname": "ali",
+        "lastname": "ali",
+        "username": "ali",
+        "email": "ali@gmail.com",
+        "password": "ali",
+        "photo": "https://dummyjson.com/icon/ali/128",
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    },
+    {
+        "id": 4,
+        "firstname": "fatima",
+        "lastname": "fatima",
+        "username": "fatima",
+        "email": "fatima@gmail.com",
+        "password": "fatima",
+        "photo": "https://dummyjson.com/icon/fatima/128",
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    },
+    {
+        "id": 5,
+        "firstname": "salah",
+        "lastname": "salah",
+        "username": "salah",
+        "email": "salah@gmail.com",
+        "password": "salah",
+        "photo": "https://dummyjson.com/icon/salah/128",    
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    },
+    {
+        "id": 6,
+        "firstname": "hassan",
+        "lastname": "hassan",
+        "username": "hassan",
+        "email": "hassan@gmail.com",
+        "password": "hassan",
+        "photo": "https://dummyjson.com/icon/hassan/128",
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    },
+    {
+        "id": 7,
+        "firstname": "mohamed",
+        "lastname": "mohamed",
+        "username": "mohamed",
+        "email": "mohamed@gmail.com",
+        "password": "mohamed",
+        "photo": "https://dummyjson.com/icon/mohamed/128",
+        "bio": "loves coding & coffee",
+        "role": "user" 
+    }
+]

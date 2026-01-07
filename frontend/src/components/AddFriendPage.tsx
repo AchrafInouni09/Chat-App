@@ -1,18 +1,32 @@
 import React from 'react';
 import AddFriendCard from './ui/AddFriendCard';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import CryptoHover from './ui/CryptoHover';
 
-const MOCK_SUGGESTIONS = [
-    { id: 1, username: "Emily Johnson", avatarUrl: "https://dummyjson.com/icon/emilys/128", bio: "loves coding & coffee" },
-    { id: 2, username: "Michael Williams", avatarUrl: "https://dummyjson.com/icon/michaelw/128", bio: "fullstack dev" },
-    { id: 3, username: "Sophia Brown", avatarUrl: "https://dummyjson.com/icon/sophiab/128", bio: "design enthusiast" },
-    { id: 4, username: "James Davis", avatarUrl: "https://dummyjson.com/icon/jamesd/128", bio: "gaming 24/7" },
-    { id: 5, username: "Emma Miller", avatarUrl: "https://dummyjson.com/icon/emmaj/128", bio: "react wizard" },
-    { id: 6, username: "Olivia Wilson", avatarUrl: "https://dummyjson.com/icon/oliviaw/128", bio: "frontend master" },
-];
+interface User {
+    id: number;
+    username: string;
+    avatarUrl: string;
+    bio: string;
+}
 
 const AddFriendPage = () => {
     const navigate = useNavigate();
+    // ghir test drt whd json file smito users.json bach nfechihom 
+    const [users, setUsers] = useState<User[]>([]);
+    useEffect(() => {
+        const loadUsers = async () => {
+
+            const response = await fetch("../public/test/users.json");
+            const data = await response.json();
+            setUsers(data);
+
+        }
+        loadUsers();
+    }, []);
+    // hna kisali test
 
     const handleAddFriend = (id: number) => {
         console.log(`Added friend ${id}`);
@@ -24,7 +38,7 @@ const AddFriendPage = () => {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-grunge-dark pb-6">
                 <div>
                     <h1 className="font-display text-4xl md:text-5xl uppercase tracking-tighter">
-                        Find Friends
+                        <CryptoHover text="Find Friends" className="text-grunge-accent" activeClassName="text-grunge-dark animate-glitch" />
                     </h1>
                     <p className="font-mono text-grunge-gray mt-2">Expand your network_</p>
                 </div>
@@ -51,7 +65,7 @@ const AddFriendPage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {MOCK_SUGGESTIONS.map((friend) => (
+                {users.map((friend) => (
                     <AddFriendCard
                         key={friend.id}
                         username={friend.username}

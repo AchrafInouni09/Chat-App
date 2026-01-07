@@ -20,7 +20,7 @@ const AuthForm = () => {
     const navigate = useNavigate();
 
     const onSubmit = async (data: RegistrationData) => {
-        console.log(data);
+        // console.log(data);
 
         let response;
 
