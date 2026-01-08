@@ -128,6 +128,140 @@ Authenticates a user and returns a JWT token.
 *   `401 Unauthorized`: Invalid credentials (wrong username or password).
 *   `500 Internal Server Error`: Server issue.
 
+### 3 Friends API
+All friends routes are prefixed with: `/api/friends`
+**Note:** All endpoints below require the header: `Authorization: Bearer <token>`
+
+### . List Friends
+Retrieves all users with whom the current user has an 'accepted' friendship status.
+
+*   **Endpoint:** `GET /list`
+*   **URL:** `http://localhost:3000/api/friends/list`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "friends": [
+    {
+      "id": 2,
+      "username": "jane_doe",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "avatar_url": null,
+      "bio": "Hello world"
+    }
+  ]
+}
+```
+### . List sent Requests
+Retrieves a list of users who have sent a friend request to the current user.
+
+*   **Endpoint:** `GET /sent`
+*   **URL:** `http://localhost:3000/api/friends/pending`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": 3,
+    "username": "new_user",
+    "first_name": "New",
+    "last_name": "User",
+    "avatar_url": null,
+    "bio": null
+  }
+]
+```
+
+### . List Pending Requests
+Retrieves a list of users who have sent a friend request to the current user.
+
+*   **Endpoint:** `GET /pending`
+*   **URL:** `http://localhost:3000/api/friends/pending`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": 3,
+    "username": "new_user",
+    "first_name": "New",
+    "last_name": "User",
+    "avatar_url": null,
+    "bio": null
+  }
+]
+```
+
+### . Send Friend Request
+Sends a friend request to another user by their username.
+
+*   **Endpoint:** `POST /request`
+*   **URL:** `http://localhost:3000/api/friends/request`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "target_username"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend request sent"
+}
+```
+
+### . Accept Friend Request
+Accepts an incoming friend request from a specific user.
+
+*   **Endpoint:** `PUT /accept`
+*   **URL:** `http://localhost:3000/api/friends/accept`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "requester_username"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend request accepted"
+}
+```
+
+### . Remove Friend / Decline Request
+Removes an existing friend or declines a pending friend request.
+
+*   **Endpoint:** `DELETE /remove`
+*   **URL:** `http://localhost:3000/api/friends/remove`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "username_to_remove"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend removed"
+}
+```
+
 ---
 
 ## ⚙️ Environment Variables

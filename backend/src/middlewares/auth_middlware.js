@@ -104,4 +104,26 @@ async function auth_mw_register (req, res, next)
     }
 }
 
-module.exports = {auth_mw_login, auth_mw_register};
+async function auth_mw_token (req, res, next)
+{
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token)
+    {
+        return res.status (401).json ({message: 'Access token is missing'});
+    }
+
+    try
+    {
+        const decoded = jwt.verify (token, config.jwt_secret);
+        req.user = decoded;
+        next ();
+    }
+    catch (err)
+    {
+        return res.status (403).json ({message: 'Invalid or expired token'});
+    }
+}
+
+module.exports = {auth_mw_login, auth_mw_register, auth_mw_token};
