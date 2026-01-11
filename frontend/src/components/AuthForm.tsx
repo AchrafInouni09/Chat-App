@@ -54,12 +54,18 @@ const AuthForm = () => {
         }
         if (!response || !response.ok) {
             console.log("error");
+            console.log(response);
             return;
         }
         const res = await response.json();
-        console.log(res.accessToken);
-        localStorage.setItem("accessToken", res.accessToken);
-        navigate("/");// hta n9adha fin bagha tmchi 
+        console.log(res.token);
+        localStorage.setItem("accessToken", res.token);
+        if (!isLogin) {
+            navigate("/profile");
+        }
+        else {
+            navigate("/chat");
+        }
     }
 
     return (
@@ -83,31 +89,31 @@ const AuthForm = () => {
             <div className="flex flex-col gap-4">
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                     {!isLogin && (
-                    <>
-                        <div>
-                            <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
-                                Identity_String
-                            </label>
-                            <input
-                                type="text"
-                                {...register('firstname')}
-                                className="w-full bg-transparent border-2 border-grunge-dark p-3 font-mono text-base text-grunge-dark outline-none focus:bg-grunge-dark focus:text-grunge-white focus:border-grunge-accent placeholder:text-grunge-gray/50 transition-colors"
-                                placeholder="firstname"
-                            />
-                        </div>
+                        <>
+                            <div>
+                                <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
+                                    Identity_String
+                                </label>
+                                <input
+                                    type="text"
+                                    {...register('firstname')}
+                                    className="w-full bg-transparent border-2 border-grunge-dark p-3 font-mono text-base text-grunge-dark outline-none focus:bg-grunge-dark focus:text-grunge-white focus:border-grunge-accent placeholder:text-grunge-gray/50 transition-colors"
+                                    placeholder="firstname"
+                                />
+                            </div>
 
-                        <div>
-                            <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
-                                Identity_String
-                            </label>
-                            <input
-                                type="text"
-                                {...register('lastname')}
-                                className="w-full bg-transparent border-2 border-grunge-dark p-3 font-mono text-base text-grunge-dark outline-none focus:bg-grunge-dark focus:text-grunge-white focus:border-grunge-accent placeholder:text-grunge-gray/50 transition-colors"
-                                placeholder="lastname"
-                            />
-                        </div>
-                    </>
+                            <div>
+                                <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
+                                    Identity_String
+                                </label>
+                                <input
+                                    type="text"
+                                    {...register('lastname')}
+                                    className="w-full bg-transparent border-2 border-grunge-dark p-3 font-mono text-base text-grunge-dark outline-none focus:bg-grunge-dark focus:text-grunge-white focus:border-grunge-accent placeholder:text-grunge-gray/50 transition-colors"
+                                    placeholder="lastname"
+                                />
+                            </div>
+                        </>
                     )}
 
                     <div>
