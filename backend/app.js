@@ -6,7 +6,7 @@ const friendsRoutes = require ('./src/routes/friendsRoutes');
 const {Server} = require('socket.io');
 const http = require ('http');
 const chatRoutes = require("./src/routes/chatRoutes");
-
+const profileRoutes = require("./src/routes/ProfileRoutes");
 const cors = require ('cors');
 
 const { auth_mw_token } = require('./src/middlewares/auth_middlware');
@@ -17,7 +17,7 @@ const app = express ();
 
 app.use (cors({
     origin:'http://localhost:5173',
-    credetials: true
+    credentials: true
 }));
 
 app.use (express.json ());
@@ -29,6 +29,8 @@ app.use ('/api/auth', authRoutes);
 app.use ('/api/friends', auth_mw_token , friendsRoutes);
 
 app.use("/api/chat", auth_mw_token, chatRoutes);
+
+app.use("/api/profile", auth_mw_token, profileRoutes);
 
 
 app.get ('/', (req, res) => {
