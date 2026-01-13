@@ -1,13 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
 import Avatar from "./Avatar";
+import Cookies from "js-cookie";
 
 
 function Nav() {
   const navigate = useNavigate();
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = Cookies.get("token");
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
+    Cookies.remove("token");
     navigate("/login");
   };
 

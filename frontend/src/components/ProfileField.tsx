@@ -1,12 +1,14 @@
 // src/components/ui/ProfileField.tsx
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from './ui/Avatar';
 import Input from './ui/Input';
 import Textarea from './ui/Textarea';
 import Button from './ui/Button';
 import CryptoHover from './ui/CryptoHover';
 import Nav from './ui/Nav';
-import { get_UserData } from '../lib/utils';
+import { get_ProfileData, update_ProfileData, delete_Profile } from '../lib/utils';
+import Cookies from 'js-cookie';
 
 
 interface ProfileFieldProps {
@@ -28,24 +30,30 @@ const ProfileField = ({
     onSave,
     className = ''
 }: ProfileFieldProps) => {
+    const navigate = useNavigate();
     const [avatar, setAvatar] = useState<string | null>(defaultAvatar);
     const [firstName, setFirstName] = useState(defaultFirstName);
     const [lastName, setLastName] = useState(defaultLastName);
     const [username, setUsername] = useState(defaultUsername);
     const [bio, setBio] = useState(defaultBio);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     //test data li khasani 
-    // useEffect(() => {
-    //     const userData = get_UserData();
-    //     if (userData) {
-    //         const data = userData as any;
-    //         console.log(data);
-    //         if (data.user.first_name) setFirstName(data.user.first_name);
-    //         if (data.user.last_name) setLastName(data.user.last_name);
-    //         if (data.user.username) setUsername(data.user.username);
-    //         if (data.user.bio) setBio(data.user.bio);
-    //         if (data.user.avatar_url) setAvatar(data.user.avatar_url);
-    //     }
-    // }, []);
+    useEffect(() => {
+        const fetchData = async () => {
+            const userData = await get_ProfileData();
+            if (userData) {
+                // console.log(userData);
+                setFirstName(userData.user.first_name || '');
+                setLastName(userData.user.last_name || '');
+                setUsername(userData.user.username || '');
+                setBio(userData.user.bio || '');
+                setAvatar(userData.user.avatar_url || null);
+            }
+        };
+        fetchData();
+    }, []);
 
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,12 +72,39 @@ const ProfileField = ({
         fileInputRef.current?.click();
     };
 
-    const handleSave = () => {
-        // console.log(avatar, firstName, lastName, username, bio);
-        //hna khass api bach post data 
-        if (onSave) {
-            
-            onSave({ avatar, firstName, lastName, username, bio });
+    const handleSave = async () => {
+        setIsLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+
+        const result = await update_ProfileData({
+            avatar,
+            firstName,
+            lastName,
+            username,
+            bio
+        });
+
+        setIsLoading(false);
+
+        if (result.success) {
+            setSuccessMessage('Profile updated successfully!');
+            if (onSave) {
+                onSave({ avatar, firstName, lastName, username, bio });
+            }
+            setTimeout(() => setSuccessMessage(null), 3000);
+        } else {
+            setError(result.error || 'Failed to update profile');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete your profile? This action cannot be undone.')) {
+            const result = await delete_Profile();
+            if (result.success) {
+                Cookies.remove("token");
+                navigate("/login");
+            }
         }
     };
 
@@ -188,17 +223,34 @@ const ProfileField = ({
                                                 />
                                             </div>
                                         </div>
+                                        {error && (
+                                            <div className="text-red-600 font-mono text-xs border-2 border-red-600 bg-red-50 p-3">
+                                                ⚠ {error}
+                                            </div>
+                                        )}
+                                        {successMessage && (
+                                            <div className="text-green-600 font-mono text-xs border-2 border-green-600 bg-green-50 p-3">
+                                                ✓ {successMessage}
+                                            </div>
+                                        )}
                                         <div className="mt-8 pt-8 border-t-2 border-grunge-dark/20 flex flex-col sm:flex-row gap-4 items-center justify-between">
                                             <p className="hidden sm:block font-mono text-xs text-grunge-gray">
                                                 * CHANGES WILL REWRITE LOCAL STORAGE
                                             </p>
                                             <div className="flex w-full sm:w-auto gap-4">
                                                 <Button
+                                                    onClick={handleDelete}
+                                                    className="flex-1 sm:flex-none px-8 bg-red-600 hover:bg-red-700 text-white border-red-800 hover:border-red-900 hover:text-white hover:shadow-[4px_4px_0_#991b1b]"
+                                                >
+                                                    Delete Profile
+                                                </Button>
+                                                <Button
                                                     variant="primary"
                                                     onClick={handleSave}
-                                                    className="flex-1 sm:flex-none px-8"
+                                                    className="flex-1 sm:flex-none px-8 bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-800 hover:border-emerald-900 hover:shadow-[4px_4px_0_#064e3b]"
+                                                    disabled={isLoading}
                                                 >
-                                                    Save Data
+                                                    {isLoading ? 'Saving...' : 'Save Data'}
                                                 </Button>
                                             </div>
                                         </div>

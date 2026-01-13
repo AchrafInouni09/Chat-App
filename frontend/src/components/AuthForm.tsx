@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 
 interface RegistrationData {
@@ -17,9 +18,11 @@ const AuthForm = () => {
 
     const [isLogin, setIsLogin] = useState(true);
     const { register, handleSubmit } = useForm<RegistrationData>()
+    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const onSubmit = async (data: RegistrationData) => {
+        setError(null);
         // console.log(data);
 
         let response;
@@ -54,18 +57,13 @@ const AuthForm = () => {
         }
         if (!response || !response.ok) {
             console.log("error");
-            console.log(response);
+            const errData = await response?.json().catch(() => ({}));
+            setError(errData?.message || "User not found");
             return;
         }
         const res = await response.json();
-        console.log(res.token);
-        localStorage.setItem("accessToken", res.token);
-        if (!isLogin) {
-            navigate("/profile");
-        }
-        else {
-            navigate("/chat");
-        }
+        Cookies.set("token", res.token);
+        navigate("/profile");
     }
 
     return (
@@ -87,6 +85,11 @@ const AuthForm = () => {
             </div>
 
             <div className="flex flex-col gap-4">
+                {isLogin && error && (
+                    <div className="text-red-600 font-mono text-xs border-2 border-red-600 bg-red-50 p-3">
+                        ⚠ {error}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                     {!isLogin && (
                         <>

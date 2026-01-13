@@ -8,11 +8,12 @@ import ProfileField from "./components/ProfileField.tsx";
 import AddFriendPage from "./components/AddFriendPage.tsx";
 import AdminDashboard from "./components/AdminDashboard.tsx";
 import { checkRole, isJwtValid } from "./lib/utils";
+import Cookies from "js-cookie";
 
 import './App.css'
 
 function ProtectedRoute({ children, role }: { children: ReactNode, role?: string[] }) {
-  const token = localStorage.getItem('accessToken');
+  const token = Cookies.get('token');
   if (!token || !isJwtValid(token)) {
     return <Navigate to="/login" />;
   }
