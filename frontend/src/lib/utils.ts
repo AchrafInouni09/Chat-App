@@ -39,7 +39,7 @@ export async function update_ProfileData(profileData: {
   avatar?: string | null;
   firstName?: string;
   lastName?: string;
-  username?: string;
+  // username?: string;
   bio?: string;
 }) {
   const token = Cookies.get('token');
@@ -58,7 +58,7 @@ export async function update_ProfileData(profileData: {
         // avatar: profileData.avatar,
         first_name: profileData.firstName,
         last_name: profileData.lastName,
-        username: profileData.username,
+        // username: profileData.username,
         bio: profileData.bio,
       }),
     });
@@ -69,6 +69,7 @@ export async function update_ProfileData(profileData: {
     }
 
     const data = await response.json();
+    console.log("Updated profile data:", data);
     return { success: true, data };
   } catch (error) {
     console.error("Error updating profile:", error);

@@ -43,6 +43,7 @@ const ProfileField = ({
     useEffect(() => {
         const fetchData = async () => {
             const userData = await get_ProfileData();
+            console.log("Fetched user data:", userData);
             if (userData) {
                 // console.log(userData);
                 setFirstName(userData.user.first_name || '');
@@ -209,6 +210,7 @@ const ProfileField = ({
                                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                                                     placeholder="e.g. Neo Anderson"
                                                     error={null}
+                                                    readOnly
                                                 />
                                             </div>
                                             <div className="relative">
