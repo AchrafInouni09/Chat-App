@@ -339,6 +339,67 @@ Retrieves the latest messages for a conversation.
 }
 ```
 
+### 4. Create Group Room
+Creates a public group chat room.
+
+*   **Endpoint:** `POST /groups`
+*   **URL:** `http://localhost:3000/api/chat/groups`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "name": "General Chat"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "group": {
+    "id": 15,
+    "name": "General Chat",
+    "type": "group"
+  }
+}
+```
+
+### 5. List Public Rooms
+Retrieves a list of all available public group rooms.
+
+*   **Endpoint:** `GET /groups`
+*   **URL:** `http://localhost:3000/api/chat/groups`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "groups": [
+    {
+      "id": 15,
+      "name": "General Chat",
+      "type": "group",
+      "created_at": "2026-01-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 6. Join Group Room
+Joins the current user to a specific group conversation.
+
+*   **Endpoint:** `POST /groups/:id/join`
+*   **URL:** `http://localhost:3000/api/chat/groups/15/join`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "message": "Joined successfully"
+}
+```
+
 ---
 
 ## 🔌 Socket.IO Events (Chat)

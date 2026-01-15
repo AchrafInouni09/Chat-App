@@ -64,10 +64,47 @@ class Conversations
 
     async listMyConversation (userId)
     {
-        const query = `select   c.id, c.type, c.name, c.created_at   from conversations c
-            join  conversation_participants cp on cp.conversation_id = c.id where cp.user_id = ?
-            order by c.created_at desc`;
+        const query = `
+            SELECT c.id, c.type, c.created_at,
+            CASE 
+                WHEN c.type = 'group' THEN c.name
+                ELSE (
+                    SELECT u.username 
+                    FROM conversation_participants cp2 
+                    JOIN users u ON u.id = cp2.user_id 
+                    WHERE cp2.conversation_id = c.id AND cp2.user_id != ? 
+                    LIMIT 1
+                )
+            END as name
+            FROM conversations c
+            JOIN conversation_participants cp ON cp.conversation_id = c.id
+            WHERE cp.user_id = ?
+            ORDER BY c.created_at DESC
+        `;
         return await this.Db.select (q, [userId]);
+    }
+
+
+    async createGroup (name , creatorId)
+    {
+        const query = `insert into conversations (type, name) values ('group', ?)`;
+        const res = await this.Db.select (query, [name]);
+        const convId = res.insertId;
+
+        await this.addParticipant (convId, creatorId);
+        return {id: convId, name, type:'group'};
+    }
+
+    async addParticipant (convId, userId)
+    {
+        const query = `INSERT IGNORE INTO conversation_participants (conversation_id, user_id) VALUES (?, ?)`;
+        return await this.Db.select (query, [convId, userId]);
+    }
+
+    async getAllGroups() 
+    {
+        const query = `SELECT id, name, type, created_at FROM conversations WHERE type = 'group' ORDER BY created_at DESC`;
+        return await this.Db.select(query, []);
     }
 }
 
