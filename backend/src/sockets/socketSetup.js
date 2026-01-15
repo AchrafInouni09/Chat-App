@@ -1,11 +1,15 @@
 const jwt = require ('jsonwebtoken');
 const config = require ('../config/config');
 
+const {Conversations} = require ('../models/Conversations');
+const {Messages} = require ('../models/Messages');
+
 
 function setupSocket (io)
 {
     const convModel = new Conversations();
     const msgModel = new Messages();
+    
     io.use ((socket, next) => {
         try
         {
@@ -16,7 +20,7 @@ function setupSocket (io)
                 return next (new Error ('token missing'));
             }
 
-            const decoded = jwt.verify (token, config.jwtSecret);
+            const decoded = jwt.verify (token, config.jwt_secret);
             socket.user = decoded;
             next ();
         }
@@ -51,5 +55,4 @@ function setupSocket (io)
     
 
 }
-
 module.exports = {setupSocket};
