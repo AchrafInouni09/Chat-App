@@ -32,6 +32,7 @@ const ProfileField = ({
 }: ProfileFieldProps) => {
     const navigate = useNavigate();
     const [avatar, setAvatar] = useState<string | null>(defaultAvatar);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [firstName, setFirstName] = useState(defaultFirstName);
     const [lastName, setLastName] = useState(defaultLastName);
     const [username, setUsername] = useState(defaultUsername);
@@ -62,6 +63,7 @@ const ProfileField = ({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setAvatar(reader.result as string);
@@ -79,7 +81,7 @@ const ProfileField = ({
         setSuccessMessage(null);
 
         const result = await update_ProfileData({
-            avatar,
+            avatar: avatarFile,
             firstName,
             lastName,
             username,
@@ -90,6 +92,7 @@ const ProfileField = ({
 
         if (result.success) {
             setSuccessMessage('Profile updated successfully!');
+            setAvatarFile(null);
             if (onSave) {
                 onSave({ avatar, firstName, lastName, username, bio });
             }

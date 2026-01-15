@@ -6,6 +6,7 @@ interface ChatMessageProps {
     time: string;
     message: string;
     avatarFallback: string;
+    avatarSrc?: string;
     isOwn?: boolean;
     bubbleClassName?: string;
 }
@@ -15,13 +16,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     time,
     message,
     avatarFallback,
+    avatarSrc,
     isOwn = false,
     bubbleClassName = "",
 }) => {
     return (
         <div className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
             <Avatar
-                src={undefined}
+                src={avatarSrc}
                 alt={sender}
                 fallback={avatarFallback}
                 size="sm"

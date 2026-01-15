@@ -98,13 +98,13 @@ class User
         return (isfound);
     }
 
-    async register (firstname, lastname, username, email, password, role)
+    async register (firstname, lastname, username, email, password, role, avatar_url)
     {
         try
         {
-            const query = `insert into users (first_name, last_name, username, email, password_hash, role) values (
-             ?, ?, ?, ?, ?, ?)`;
-            const results = await this.Db.select (query, [firstname, lastname, username, email, password, role]);
+            const query = `insert into users (first_name, last_name, username, email, password_hash, role, avatar_url) values (
+             ?, ?, ?, ?, ?, ?, ?)`;
+            const results = await this.Db.select (query, [firstname, lastname, username, email, password, role, avatar_url]);
             return results;
         }
         catch (err)

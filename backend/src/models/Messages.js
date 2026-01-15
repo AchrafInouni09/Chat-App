@@ -11,7 +11,8 @@ class Messages
     {
         const query = `
         select  
-        m.id, m.conversation_id, m.sender_id, m.content, m.created_at , u.username as sender_username
+        m.id, m.conversation_id, m.sender_id, m.content, m.created_at, 
+        u.username as sender_username, u.avatar_url
         from messages m  join users u on u.id = m.sender_id where
                 m.conversation_id = ? order by m.created_at desc limit ?`;
         const rows = await this.Db.select (query, [conversationId, Number (limit)]);
@@ -27,7 +28,8 @@ class Messages
     async getMessageById (messageid)
     {
         const query = `
-        select m.id, m.conversation_id, m.sender_id, m.content, m.created_at, u.username as sender_username
+        select m.id, m.conversation_id, m.sender_id, m.content, m.created_at, 
+        u.username as sender_username, u.avatar_url
         from messages m join users u on u.id = m.sender_id where m.id = ? limit 1`;
 
         const rows = await this.Db.select (query, [messageid]);

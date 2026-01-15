@@ -1,12 +1,30 @@
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
 import Avatar from "./Avatar";
 import Cookies from "js-cookie";
+import { get_ProfileData } from '../../lib/utils';
 
 
 function Nav() {
   const navigate = useNavigate();
   const accessToken = Cookies.get("token");
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [userInitial, setUserInitial] = useState("ME");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (accessToken) {
+        const userData = await get_ProfileData();
+        if (userData && userData.user) {
+          setUserAvatar(userData.user.avatar_url || null);
+          setUserInitial(userData.user.username?.[0]?.toUpperCase() || "ME");
+        }
+      }
+    };
+    fetchUserData();
+  }, [accessToken]);
+
   const handleLogout = () => {
     Cookies.remove("token");
     navigate("/login");
@@ -34,7 +52,7 @@ function Nav() {
               LOGOUT
             </button>
             <Link to="/profile">
-              <Avatar src="" alt="User" fallback="ME" />
+              <Avatar src={userAvatar || undefined} alt="User" fallback={userInitial} />
             </Link>
           </div>
         )}

@@ -36,7 +36,7 @@ async function auth_mw_login (req, res, next)
                         username: user.username,
                         role: user.role
         };
-        console.log (payload);
+        console.log (payload);    // ############
         const token = jwt.sign (payload, config.jwt_secret, {expiresIn: '1h'})
         return  res.json ({message: 'Login successful', token})
     }
@@ -51,10 +51,16 @@ async function auth_mw_login (req, res, next)
 
 async function auth_mw_register (req, res, next)
 {
-    console.log (req.body); // to be removed 
     if (!req.body)
     {
         return res.status (400).json ({message: 'Request body is missing. Check Content-Type header.'});
+    }
+
+    let avatar_url = null;
+
+    if (req.file)
+    {
+        avatar_url = `images/${req.file.filename}`;
     }
 
     const {firstname, lastname, username, email, password, role} = req.body;
@@ -94,7 +100,7 @@ async function auth_mw_register (req, res, next)
             return res.status (400).json ({message: 'Invalid role specified'});
         }
 
-        await usermodel.register (firstname, lastname, username, email, password, role);
+        await usermodel.register (firstname, lastname, username, email, password, role, avatar_url);
         next ();
     }
     catch (err)

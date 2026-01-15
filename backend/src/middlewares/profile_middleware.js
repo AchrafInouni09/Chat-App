@@ -28,8 +28,22 @@ async function update_my_profile_mw (req, res)
             .json({ message: "Request body is missing. Check Content-Type header." });
         }
 
+        // Handle avatar upload if present
+        let avatar_url = null;
+        if (req.file) {
+            avatar_url = `images/${req.file.filename}`;
+        }
+
         const userModel = new User ();
-        const updated = await userModel.updateProfile (req.user.id, req.body);
+        console.log (req.body);
+        
+        // Add avatar_url to the update payload if a file was uploaded
+        const updatePayload = { ...req.body };
+        if (avatar_url) {
+            updatePayload.avatar_url = avatar_url;
+        }
+        
+        const updated = await userModel.updateProfile (req.user.id, updatePayload);
         return res.json({ message: "Profile updated", user: updated });
     }
     catch (err)

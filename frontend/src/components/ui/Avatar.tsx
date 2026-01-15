@@ -78,12 +78,19 @@ const Avatar = ({ src, alt, fallback, size = "md", className = "" }) => {
         lg: "w-16 h-16 text-base"
     };
 
+    const [imageError, setImageError] = React.useState(false);
+
     return (
         <div className={`relative inline-block ${sizes[size]} ${className}`}>
             <div className="absolute inset-0 bg-grunge-dark translate-x-[2px] translate-y-[2px]"></div>
             <div className="relative w-full h-full border-2 border-grunge-dark bg-grunge-white overflow-hidden flex items-center justify-center">
-                {src ? (
-                    <img src={src} alt={alt} className="w-full h-full object-cover" />
+                {src && !imageError ? (
+                    <img 
+                        src={src} 
+                        alt={alt || "avatar"} 
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                    />
                 ) : (
                     <BouncingContent>{fallback || "?"}</BouncingContent>
                 )}
