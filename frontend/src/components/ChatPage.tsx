@@ -49,7 +49,7 @@ const ChatPage = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const token = Cookies.get('token');
-    
+
     // Get username from JWT token for reliable comparison
     const getCurrentUsername = (): string => {
         if (!token) return '';
@@ -60,7 +60,7 @@ const ChatPage = () => {
             return Cookies.get('username') || '';
         }
     };
-    
+
     const currentUsername = getCurrentUsername();
 
     // 1. Initial Data Fetch & Socket Setup
@@ -108,23 +108,23 @@ const ChatPage = () => {
     // 3. Fetch Messages when active conversation changes
     useEffect(() => {
         if (!activeConvId) return;
-        
+
         // Join socket room
         socketRef.current?.emit("conversation:join", { conversationId: activeConvId });
 
         fetch(`http://localhost:3000/api/chat/conversations/${activeConvId}/messages`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
-        .then(res => res.json())
-        .then(data => {
-            const messagesWithAvatar = (data.messages || []).map((msg: any) => ({
-                ...msg,
-                avatar_url: msg.avatar_url ? `http://localhost:3000/${msg.avatar_url}` : null,
-                isOwn: msg.sender_username === currentUsername
-            }));
-            setMessages(messagesWithAvatar);
-            scrollToBottom();
-        });
+            .then(res => res.json())
+            .then(data => {
+                const messagesWithAvatar = (data.messages || []).map((msg: any) => ({
+                    ...msg,
+                    avatar_url: msg.avatar_url ? `http://localhost:3000/${msg.avatar_url}` : null,
+                    isOwn: msg.sender_username === currentUsername
+                }));
+                setMessages(messagesWithAvatar);
+                scrollToBottom();
+            });
     }, [activeConvId, currentUsername]);
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -186,9 +186,9 @@ const ChatPage = () => {
         try {
             const res = await fetch('http://localhost:3000/api/chat/conversation/direct', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ username: newDmUsername.trim() })
             });
@@ -208,7 +208,7 @@ const ChatPage = () => {
 
     const sendMessage = () => {
         if (!inputText || !activeConvId) return;
-        
+
         socketRef.current?.emit("message:send", {
             conversationId: activeConvId,
             content: inputText
@@ -219,29 +219,29 @@ const ChatPage = () => {
     const activeConversation = conversations.find(c => c.id === activeConvId);
 
     return (
-        <div className="min-h-screen bg-grunge-white font-mono flex flex-col">
+        <div className="h-screen bg-grunge-white font-mono flex flex-col overflow-hidden">
             <Nav />
 
-            <div className="flex-1 flex max-w-7xl mx-auto w-full p-4 md:p-8 gap-6 h-[calc(100vh-100px)]">
+            <div className="flex-1 flex max-w-7xl mx-auto w-full p-4 md:p-8 gap-6 min-h-0">
                 {/* Sidebar */}
                 <div className="w-80 bg-grunge-white border-4 border-grunge-dark shadow-[8px_8px_0_#0f0f10] hidden md:flex flex-col overflow-hidden">
                     {/* Friends Link */}
-                    <button 
+                    <button
                         onClick={() => navigate('/friends')}
                         className="w-full p-3 text-xs font-bold uppercase bg-grunge-accent text-white hover:bg-grunge-dark transition-colors border-b-2 border-grunge-dark"
                     >
                         👥 My Friends
                     </button>
-                    
+
                     {/* Sidebar Tabs */}
                     <div className="flex border-b-2 border-grunge-dark">
-                         <button 
+                        <button
                             onClick={() => setActiveTab('my_chats')}
                             className={`flex-1 p-3 text-xs font-bold uppercase hover:bg-grunge-dark hover:text-white transition-colors ${activeTab === 'my_chats' ? 'bg-grunge-dark text-white' : ''}`}
                         >
                             My Chats
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('rooms')}
                             className={`flex-1 p-3 text-xs font-bold uppercase hover:bg-grunge-dark hover:text-white transition-colors ${activeTab === 'rooms' ? 'bg-grunge-dark text-white' : ''}`}
                         >
@@ -256,7 +256,7 @@ const ChatPage = () => {
                                 <div className="p-2 border-b-2 border-grunge-dark bg-grunge-gray/10 mb-2">
                                     <h4 className="text-xs font-bold mb-2 uppercase">New Direct Message</h4>
                                     <div className="flex gap-2">
-                                        <input 
+                                        <input
                                             value={newDmUsername}
                                             onChange={e => { setNewDmUsername(e.target.value); setDmError(""); }}
                                             onKeyDown={e => e.key === 'Enter' && startDirectMessage()}
@@ -273,7 +273,7 @@ const ChatPage = () => {
                                         <SideFriendReq
                                             name={conv.name || "Unknown"}
                                             message={conv.type === 'group' ? '🌐 Public Room' : '👤 Direct Message'}
-                                            avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}
+                                            avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}//ila 9dty trj3 avatar
                                             statusColor={activeConvId === conv.id ? "bg-grunge-accent" : "bg-grunge-green"}
                                             isActive={activeConvId === conv.id}
                                         />
@@ -288,7 +288,7 @@ const ChatPage = () => {
                                 <div className="p-2 border-b-2 border-grunge-dark bg-grunge-gray/10">
                                     <h4 className="text-xs font-bold mb-2 uppercase">Create New Room</h4>
                                     <div className="flex gap-2">
-                                        <input 
+                                        <input
                                             value={newRoomName}
                                             onChange={e => setNewRoomName(e.target.value)}
                                             placeholder="ROOM_NAME"
@@ -300,7 +300,7 @@ const ChatPage = () => {
                                 {publicRooms.map(room => (
                                     <div key={room.id} className="flex items-center justify-between p-2 border border-grunge-dark hover:bg-grunge-gray/5">
                                         <span className="font-bold text-sm">#{room.name}</span>
-                                        <button 
+                                        <button
                                             onClick={() => joinRoom(room.id)}
                                             className="text-[10px] bg-grunge-accent text-white px-2 py-1 uppercase font-bold border border-grunge-dark hover:shadow-[2px_2px_0_black]"
                                         >
@@ -334,16 +334,16 @@ const ChatPage = () => {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-noise bg-opacity-5">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-noise bg-opacity-5 min-h-0">
                         {messages.map((msg, idx) => (
-                             <ChatMessage
+                            <ChatMessage
                                 key={idx}
                                 sender={msg.sender_username}
-                                time={new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                time={new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 message={msg.content}
                                 avatarFallback={msg.sender_username[0]?.toUpperCase()}
                                 avatarSrc={msg.avatar_url || undefined}
-                                isOwn={msg.isOwn} 
+                                isOwn={msg.isOwn}
                             />
                         ))}
                         <div ref={messagesEndRef} />

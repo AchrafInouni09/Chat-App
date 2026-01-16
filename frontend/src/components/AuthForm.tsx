@@ -21,7 +21,7 @@ const AuthForm = () => {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    
+
     const { register, handleSubmit } = useForm<RegistrationData>()
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -55,7 +55,7 @@ const AuthForm = () => {
                 formData.append('email', data.email || '');
                 formData.append('password', data.password);
                 formData.append('role', 'user');
-                
+
                 if (avatarFile) {
                     formData.append('avatar', avatarFile);
                 }
@@ -126,7 +126,7 @@ const AuthForm = () => {
                                 <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
                                     Avatar_Image
                                 </label>
-                                <div 
+                                <div
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-24 h-24 border-2 border-dashed border-grunge-dark flex items-center justify-center cursor-pointer hover:border-grunge-accent hover:bg-grunge-dark/5 transition-all overflow-hidden"
                                 >
@@ -223,7 +223,7 @@ const AuthForm = () => {
                         </div>
                     )}
 
-                    <button 
+                    <button
                         disabled={isSubmitting}
                         className="w-full p-4 mt-2 bg-grunge-accent text-grunge-white border-2 border-grunge-dark font-mono font-bold uppercase cursor-pointer hover:shadow-[4px_4px_0_#0f0f10] active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
