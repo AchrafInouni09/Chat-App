@@ -9,6 +9,7 @@ const chatRoutes = require("./src/routes/chatRoutes");
 const profileRoutes = require("./src/routes/ProfileRoutes");
 const cors = require ('cors');
 const path = require ('path');
+const PostsRoutes = require ('./src/routes/PostsRoutes');
 
 const { auth_mw_token } = require('./src/middlewares/auth_middlware');
 const {setupSocket} = require('./src/sockets/socketSetup');
@@ -28,6 +29,7 @@ app.use ('/images', express.static (path.join (__dirname, 'data/images')));
 
 
 app.use ('/api/auth', authRoutes);
+app.use ('/api/posts', PostsRoutes);
 
 app.use ('/api/friends', auth_mw_token , friendsRoutes);
 

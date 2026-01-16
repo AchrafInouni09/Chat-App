@@ -12,7 +12,7 @@ router.get ('/sent', list_sent_requests_mw);
 router.get ('/search', search_users_mw);
 
 
-router.post ('/request', send_friend_request_mw );
+router.post ('/request', send_friend_request_mw);
 
 router.delete ('/remove', removeFriend_mw);
 

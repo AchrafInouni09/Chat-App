@@ -44,6 +44,7 @@ function Nav() {
         {accessToken && (
           <div className="flex items-center gap-4">
             <Link to="/chat" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Chat</Link>
+            <Link to="/posts" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Posts</Link>
             <Link to="/friends" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Friends</Link>
             <Link to="/add-friends" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Find Friends</Link>
             <button
