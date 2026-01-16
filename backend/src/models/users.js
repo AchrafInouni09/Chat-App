@@ -192,7 +192,18 @@ class User
         const q = `DELETE FROM users WHERE id = ?`;
         const result = await this.Db.select(q, [userId]);
         return result.affectedRows > 0;
-    } 
+    }
+
+    async searchUsers(searchTerm, currentUserId)
+    {
+        const query = `
+            SELECT id, username, first_name, last_name, avatar_url, bio 
+            FROM users 
+            WHERE id != ? AND (username LIKE ? OR first_name LIKE ? OR last_name LIKE ?)
+            LIMIT 20`;
+        const term = `%${searchTerm}%`;
+        return await this.Db.select(query, [currentUserId, term, term, term]);
+    }
     
 }
 module.exports  = {User};

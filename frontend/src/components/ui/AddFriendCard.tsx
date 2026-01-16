@@ -7,9 +7,10 @@ interface AddFriendCardProps {
     avatarUrl: string;
     bio?: string;
     onAdd?: () => void;
+    isPending?: boolean;
 }
 
-const AddFriendCard: React.FC<AddFriendCardProps> = ({ username, avatarUrl, bio, onAdd }) => {
+const AddFriendCard: React.FC<AddFriendCardProps> = ({ username, avatarUrl, bio, onAdd, isPending }) => {
     return (
         <Card className="flex flex-col items-center text-center gap-4 hover:scale-[1.02]" hoverEffect={true}>
             <div className="relative">
@@ -28,10 +29,15 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({ username, avatarUrl, bio,
             </div>
 
             <button
-                onClick={onAdd}
-                className="w-full mt-2 bg-grunge-dark text-grunge-white font-mono py-2 px-4 border-2 border-transparent hover:bg-grunge-accent hover:border-grunge-dark transition-colors"
+                onClick={isPending ? undefined : onAdd}
+                disabled={isPending}
+                className={`w-full mt-2 font-mono py-2 px-4 border-2 transition-colors ${
+                    isPending 
+                        ? 'bg-grunge-gray text-grunge-white border-grunge-gray cursor-not-allowed' 
+                        : 'bg-grunge-dark text-grunge-white border-transparent hover:bg-grunge-accent hover:border-grunge-dark'
+                }`}
             >
-                ADD FRIEND +
+                {isPending ? 'REQUEST SENT ✓' : 'ADD FRIEND +'}
             </button>
         </Card>
     );

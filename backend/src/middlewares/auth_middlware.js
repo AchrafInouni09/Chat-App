@@ -36,8 +36,9 @@ async function auth_mw_login (req, res, next)
                         username: user.username,
                         role: user.role
         };
-        console.log (payload);    // ############
+
         const token = jwt.sign (payload, config.jwt_secret, {expiresIn: '1h'})
+        console.log (token);
         return  res.json ({message: 'Login successful', token})
     }
     catch (err)

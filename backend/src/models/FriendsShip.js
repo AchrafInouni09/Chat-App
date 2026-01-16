@@ -106,6 +106,23 @@ class Friendships
 
         return await this.Db.select (deletequery, [userId, friendid, friendid, userId]);   
     }
+
+    async rejectFriendRequest (userId, requesterUserName)
+    {
+        const check_requester = `select id from users where username = ?`;
+        const user = await this.Db.select (check_requester, [requesterUserName]);
+
+        if (user.length === 0)
+            throw new Error ('user not found');
+        const requesterId = user[0].id;
+
+        const deleteQuery = `DELETE FROM friendships WHERE user_id_1 = ? AND user_id_2 = ? AND status = 'pending'`;
+        const result = await this.Db.select (deleteQuery, [requesterId, userId]);
+
+        if (result.affectedRows === 0) 
+            throw new Error ('no pending request found');
+        return result;
+    }
 }
 
 module.exports = {Friendships};

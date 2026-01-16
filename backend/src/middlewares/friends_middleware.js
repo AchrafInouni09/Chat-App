@@ -1,6 +1,8 @@
 const {Friendships} = require ('../models/FriendsShip');
+const {User} = require ('../models/users');
 
 const friendmodel = new Friendships ();
+const userModel = new User ();
 
 
 
@@ -111,4 +113,43 @@ async function list_sent_requests_mw (req, res, next)
     }
 }
 
-module.exports = {list_friends_mw, send_friend_request_mw, removeFriend_mw, accept_friend_mw, list_pendingfriend_mw, list_sent_requests_mw};
+async function search_users_mw (req, res, next)
+{
+    try
+    {
+        const userId = req.user.id;
+        const { q } = req.query;
+
+        if (!q || q.trim().length === 0)
+        {
+            return res.json({ users: [] });
+        }
+
+        const users = await userModel.searchUsers(q.trim(), userId);
+        res.json({ users });
+
+    } catch (err)
+    {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function reject_friend_request_mw (req, res, next)
+{
+    try
+    {
+        const userId = req.user.id;
+        const { username } = req.body;
+
+        if (!username) return res.status(400).json({ message: 'username is required' });
+
+        await friendmodel.rejectFriendRequest(userId, username);
+        res.json({ message: 'Friend request rejected' });
+
+    } catch (err)
+    {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+module.exports = {list_friends_mw, send_friend_request_mw, removeFriend_mw, accept_friend_mw, list_pendingfriend_mw, list_sent_requests_mw, search_users_mw, reject_friend_request_mw};

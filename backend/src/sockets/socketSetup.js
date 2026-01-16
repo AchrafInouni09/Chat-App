@@ -32,6 +32,8 @@ function setupSocket (io)
 
     io.on ("connection", (socket) =>
     {
+        console.log('User connected:', socket.user.username, socket.id);
+
         socket.on ("conversation:join", async ({conversationId})  => {
             if (!conversationId) return;
             const ok = await convModel.isParticipant (conversationId, socket.user.id);
@@ -48,8 +50,12 @@ function setupSocket (io)
         const created = await  msgModel.createMessage (conversationId, socket.user.id, content);
          const full = await msgModel.getMessageById (created.insertId);
 
-         io.to(`conv:${conversationId}`).emit("message:new", full);
+         io.to(`conversation_${conversationId}`).emit("message:new", full);
 
+        });
+
+        socket.on('disconnect', () => {
+            console.log('User disconnected:', socket.user.username);
         });
     });
     

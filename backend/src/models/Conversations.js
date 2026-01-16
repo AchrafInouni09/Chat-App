@@ -20,6 +20,7 @@ class Conversations
     {
         const query = `select id from users where username = ? limit 1`;
         const rows = await this.Db.select (query, [username]);
+        return rows[0]?.id ?? null;
     }
 
 
@@ -27,20 +28,16 @@ class Conversations
     {
         const otherid = await this.getUserIdByUserName (otherusername);
 
-        if (!other) throw new Error ("other User Not Found");
+        if (!otherid) throw new Error ("other User Not Found");
 
         if (otherid == userId) throw new Error ("cannot start a chat with yourself");
 
         const findConv = `
-        
-        select c.id from conversation c where c.type = 'direct'
-        and (select count (*) from conversation_participants cp where cp.conversation_id = c.id) = 2
-
-        and exists (select 1 from conversation_participants cp where cp.conversation_id = c.id and cp.user_id = ? )
-
-        and exists (select 1 from conversation_participants cp where cp.conversation_id = c.id and cp.user_id = ? )
-
-        Limit 1`;
+        SELECT c.id FROM conversations c WHERE c.type = 'direct'
+        AND (SELECT COUNT(*) FROM conversation_participants cp WHERE cp.conversation_id = c.id) = 2
+        AND EXISTS (SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id = c.id AND cp.user_id = ?)
+        AND EXISTS (SELECT 1 FROM conversation_participants cp WHERE cp.conversation_id = c.id AND cp.user_id = ?)
+        LIMIT 1`;
 
         const found = await this.Db.select (findConv, [userId, otherid]);
 
@@ -49,12 +46,12 @@ class Conversations
         // here we gonna create the cnv;
 
         const initCnv =  await this.Db.select (`insert into conversations (type) Values ('direct')`, []);
+        const cnvId = initCnv.insertId;
         
-        if (!conversationId)
+        if (!cnvId)
         {
             throw new Error("Insert did not return insertId. Check Db.select() implementation.");
         }
-        const cnvId = initCnv.insertId;
 
         await this.Db.select (`insert into conversation_participants (conversation_id, user_id) 
             values (?, ?), (?, ?)`, [cnvId, userId, cnvId, otherid]);
@@ -79,9 +76,8 @@ class Conversations
             FROM conversations c
             JOIN conversation_participants cp ON cp.conversation_id = c.id
             WHERE cp.user_id = ?
-            ORDER BY c.created_at DESC
-        `;
-        return await this.Db.select (q, [userId]);
+            ORDER BY c.created_at DESC`;
+        return await this.Db.select (query, [userId, userId]);
     }
 
 

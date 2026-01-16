@@ -21,7 +21,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     bubbleClassName = "",
 }) => {
     return (
-        <div className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
+        // isOwn = true → YOUR message → show on LEFT
+        // isOwn = false → OTHER's message → show on RIGHT
+        <div className={`flex gap-3 ${isOwn ? '' : 'flex-row-reverse'}`}>
             <Avatar
                 src={avatarSrc}
                 alt={sender}
@@ -29,8 +31,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 size="sm"
                 className={isOwn ? "bg-grunge-accent text-grunge-white" : "bg-grunge-dark text-grunge-white"}
             />
-            <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                <div className={`flex items-baseline gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-start' : 'items-end'}`}>
+                <div className={`flex items-baseline gap-2 mb-1 ${isOwn ? '' : 'flex-row-reverse'}`}>
                     <span className="font-bold text-xs uppercase">{sender}</span>
                     <span className="text-[10px] text-grunge-gray">{time}</span>
                 </div>
@@ -38,7 +40,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                     className={`
                         relative p-3 border-2 border-grunge-dark text-sm 
                         ${isOwn
-                            ? 'bg-grunge-dark text-grunge-white shadow-[4px_4px_0_rgba(255,42,42,0.6)]'
+                            ? 'bg-grunge-accent text-grunge-white shadow-[4px_4px_0_rgba(255,42,42,0.6)]'
                             : 'bg-grunge-white text-grunge-dark shadow-[4px_4px_0_rgba(15,15,16,0.3)]'
                         }
                         ${bubbleClassName}

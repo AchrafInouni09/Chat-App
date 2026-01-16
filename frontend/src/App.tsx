@@ -6,6 +6,7 @@ import ChatPage from "./components/ChatPage.tsx";
 import AuthPage from "./components/AuthPage.tsx";
 import ProfileField from "./components/ProfileField.tsx";
 import AddFriendPage from "./components/AddFriendPage.tsx";
+import FriendsPage from "./components/FriendsPage.tsx";
 import AdminDashboard from "./components/AdminDashboard.tsx";
 import { checkRole, isJwtValid } from "./lib/utils";
 import Cookies from "js-cookie";
@@ -33,6 +34,7 @@ function App() {
       <Route path="/register" element={<AuthPage />} />
       <Route path="/profile" element={<ProtectedRoute role={["user", "admin"]}><ProfileField /></ProtectedRoute>} />
       <Route path="/add-friends" element={<ProtectedRoute role={["user", "admin"]}><AddFriendPage /></ProtectedRoute>} />
+      <Route path="/friends" element={<ProtectedRoute role={["user", "admin"]}><FriendsPage /></ProtectedRoute>} />
       <Route path="/admin" element={ <ProtectedRoute role={["admin"]}><AdminDashboard /></ProtectedRoute>} />
     </Routes>
   )

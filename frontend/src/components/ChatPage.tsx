@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Nav from './ui/Nav';
 import Avatar from './ui/Avatar';
 import Button from './ui/Button';
@@ -7,6 +8,13 @@ import SideFriendReq from './ui/SideFriendReq';
 import ChatMessage from './ui/ChatMessage';
 import Cookies from 'js-cookie';
 import { io } from "socket.io-client";
+import { jwtDecode } from 'jwt-decode';
+
+interface JwtPayload {
+    id: number;
+    username: string;
+    role: string;
+}
 
 interface Conversation {
     id: number;
@@ -24,20 +32,38 @@ interface Message {
 }
 
 const ChatPage = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [publicRooms, setPublicRooms] = useState<Conversation[]>([]);
-    const [activeConvId, setActiveConvId] = useState<number | null>(null);
+    const [activeConvId, setActiveConvId] = useState<number | null>(
+        (location.state as any)?.activeConvId || null
+    );
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
     const [activeTab, setActiveTab] = useState<'my_chats' | 'rooms'>('my_chats');
     const [newRoomName, setNewRoomName] = useState("");
+    const [newDmUsername, setNewDmUsername] = useState("");
+    const [dmError, setDmError] = useState("");
     const socketRef = useRef<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const token = Cookies.get('token');
-    const currentUsername = Cookies.get('username');
+    
+    // Get username from JWT token for reliable comparison
+    const getCurrentUsername = (): string => {
+        if (!token) return '';
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
+            return decoded.username || '';
+        } catch {
+            return Cookies.get('username') || '';
+        }
+    };
+    
+    const currentUsername = getCurrentUsername();
 
-    // 1. Initial Data Fetch
+    // 1. Initial Data Fetch & Socket Setup
     useEffect(() => {
         fetchConversations();
         fetchPublicRooms();
@@ -49,20 +75,37 @@ const ChatPage = () => {
         });
 
         socketRef.current.on("connect", () => console.log("Socket connected"));
-        
-        socketRef.current.on("message:new", (msg: any) => {
-            if (activeConvId && msg.conversation_id === activeConvId) {
-                setMessages(prev => [...prev, msg]);
-                scrollToBottom();
-            }
-        });
+        socketRef.current.on("connect_error", (err: Error) => console.error("Socket error:", err.message));
 
         return () => {
             socketRef.current?.disconnect();
         };
     }, []);
 
-    // 2. Fetch Messages when active conversation changes
+    // 2. Handle message:new event separately to avoid stale closure
+    useEffect(() => {
+        if (!socketRef.current) return;
+
+        const handleNewMessage = (msg: any) => {
+            if (activeConvId && msg.conversation_id === activeConvId) {
+                const formattedMsg = {
+                    ...msg,
+                    avatar_url: msg.avatar_url ? `http://localhost:3000/${msg.avatar_url}` : null,
+                    isOwn: msg.sender_username === currentUsername
+                };
+                setMessages(prev => [...prev, formattedMsg]);
+                scrollToBottom();
+            }
+        };
+
+        socketRef.current.on("message:new", handleNewMessage);
+
+        return () => {
+            socketRef.current?.off("message:new", handleNewMessage);
+        };
+    }, [activeConvId, currentUsername]);
+
+    // 3. Fetch Messages when active conversation changes
     useEffect(() => {
         if (!activeConvId) return;
         
@@ -82,7 +125,7 @@ const ChatPage = () => {
             setMessages(messagesWithAvatar);
             scrollToBottom();
         });
-    }, [activeConvId]);
+    }, [activeConvId, currentUsername]);
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -137,6 +180,32 @@ const ChatPage = () => {
         }
     };
 
+    const startDirectMessage = async () => {
+        if (!newDmUsername.trim()) return;
+        setDmError("");
+        try {
+            const res = await fetch('http://localhost:3000/api/chat/conversation/direct', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ username: newDmUsername.trim() })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setNewDmUsername("");
+                fetchConversations();
+                setActiveConvId(data.conversation.id);
+            } else {
+                setDmError(data.message || "Failed to start conversation");
+            }
+        } catch (err) {
+            setDmError("Network error");
+            console.error(err);
+        }
+    };
+
     const sendMessage = () => {
         if (!inputText || !activeConvId) return;
         
@@ -156,6 +225,14 @@ const ChatPage = () => {
             <div className="flex-1 flex max-w-7xl mx-auto w-full p-4 md:p-8 gap-6 h-[calc(100vh-100px)]">
                 {/* Sidebar */}
                 <div className="w-80 bg-grunge-white border-4 border-grunge-dark shadow-[8px_8px_0_#0f0f10] hidden md:flex flex-col overflow-hidden">
+                    {/* Friends Link */}
+                    <button 
+                        onClick={() => navigate('/friends')}
+                        className="w-full p-3 text-xs font-bold uppercase bg-grunge-accent text-white hover:bg-grunge-dark transition-colors border-b-2 border-grunge-dark"
+                    >
+                        👥 My Friends
+                    </button>
+                    
                     {/* Sidebar Tabs */}
                     <div className="flex border-b-2 border-grunge-dark">
                          <button 
@@ -174,17 +251,38 @@ const ChatPage = () => {
 
                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
                         {activeTab === 'my_chats' ? (
-                            conversations.map(conv => (
-                                <div key={conv.id} onClick={() => setActiveConvId(conv.id)}>
-                                    <SideFriendReq
-                                        name={conv.name || "Unknown"}
-                                        message={conv.type === 'group' ? 'Public Room' : 'Direct Message'}
-                                        avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}
-                                        statusColor={activeConvId === conv.id ? "bg-grunge-accent" : "bg-grunge-green"}
-                                        isActive={activeConvId === conv.id}
-                                    />
+                            <>
+                                {/* Start New DM */}
+                                <div className="p-2 border-b-2 border-grunge-dark bg-grunge-gray/10 mb-2">
+                                    <h4 className="text-xs font-bold mb-2 uppercase">New Direct Message</h4>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            value={newDmUsername}
+                                            onChange={e => { setNewDmUsername(e.target.value); setDmError(""); }}
+                                            onKeyDown={e => e.key === 'Enter' && startDirectMessage()}
+                                            placeholder="USERNAME"
+                                            className="w-full text-xs p-1 border border-grunge-dark bg-transparent"
+                                        />
+                                        <button onClick={startDirectMessage} className="text-xs bg-grunge-dark text-white px-2 uppercase">→</button>
+                                    </div>
+                                    {dmError && <p className="text-[10px] text-grunge-accent mt-1">{dmError}</p>}
                                 </div>
-                            ))
+                                {/* Conversations List */}
+                                {conversations.map(conv => (
+                                    <div key={conv.id} onClick={() => setActiveConvId(conv.id)}>
+                                        <SideFriendReq
+                                            name={conv.name || "Unknown"}
+                                            message={conv.type === 'group' ? '🌐 Public Room' : '👤 Direct Message'}
+                                            avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}
+                                            statusColor={activeConvId === conv.id ? "bg-grunge-accent" : "bg-grunge-green"}
+                                            isActive={activeConvId === conv.id}
+                                        />
+                                    </div>
+                                ))}
+                                {conversations.length === 0 && (
+                                    <p className="text-xs text-grunge-gray text-center py-4">No conversations yet</p>
+                                )}
+                            </>
                         ) : (
                             <div className="space-y-4">
                                 <div className="p-2 border-b-2 border-grunge-dark bg-grunge-gray/10">
