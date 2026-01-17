@@ -128,6 +128,436 @@ Authenticates a user and returns a JWT token.
 *   `401 Unauthorized`: Invalid credentials (wrong username or password).
 *   `500 Internal Server Error`: Server issue.
 
+### 3 Friends API
+All friends routes are prefixed with: `/api/friends`
+**Note:** All endpoints below require the header: `Authorization: Bearer <token>`
+
+### . List Friends
+Retrieves all users with whom the current user has an 'accepted' friendship status.
+
+*   **Endpoint:** `GET /list`
+*   **URL:** `http://localhost:3000/api/friends/list`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "friends": [
+    {
+      "id": 2,
+      "username": "jane_doe",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "avatar_url": null,
+      "bio": "Hello world"
+    }
+  ]
+}
+```
+### . List sent Requests
+Retrieves a list of users who have sent a friend request to the current user.
+
+*   **Endpoint:** `GET /sent`
+*   **URL:** `http://localhost:3000/api/friends/pending`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": 3,
+    "username": "new_user",
+    "first_name": "New",
+    "last_name": "User",
+    "avatar_url": null,
+    "bio": null
+  }
+]
+```
+
+### . List Pending Requests
+Retrieves a list of users who have sent a friend request to the current user.
+
+*   **Endpoint:** `GET /pending`
+*   **URL:** `http://localhost:3000/api/friends/pending`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": 3,
+    "username": "new_user",
+    "first_name": "New",
+    "last_name": "User",
+    "avatar_url": null,
+    "bio": null
+  }
+]
+```
+
+### . Send Friend Request
+Sends a friend request to another user by their username.
+
+*   **Endpoint:** `POST /request`
+*   **URL:** `http://localhost:3000/api/friends/request`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "target_username"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend request sent"
+}
+```
+
+### . Accept Friend Request
+Accepts an incoming friend request from a specific user.
+
+*   **Endpoint:** `PUT /accept`
+*   **URL:** `http://localhost:3000/api/friends/accept`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "requester_username"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend request accepted"
+}
+```
+
+### . Remove Friend / Decline Request
+Removes an existing friend or declines a pending friend request.
+
+*   **Endpoint:** `DELETE /remove`
+*   **URL:** `http://localhost:3000/api/friends/remove`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "username_to_remove"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Friend removed"
+}
+```
+
+---
+
+## 💬 Chat API Documentation
+
+### Base URL
+All chat routes are prefixed with: `/api/chat`
+
+**Note:** All endpoints below require the header: `Authorization: Bearer <token>`
+
+### 1. List My Conversations
+Retrieves conversations the current user participates in.
+
+*   **Endpoint:** `GET /conversations`
+*   **URL:** `http://localhost:3000/api/chat/conversations`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "conversations": [
+    {
+      "id": 1,
+      "type": "direct",
+      "name": null,
+      "created_at": "2026-01-12T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 2. Create / Get Direct Conversation
+Creates a direct conversation with another user (or returns the existing one if already created).
+
+*   **Endpoint:** `POST /conversations/direct`
+*   **URL:** `http://localhost:3000/api/chat/conversations/direct`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "username": "target_username"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "conversation": {
+    "id": 12
+  }
+}
+```
+
+### 3. List Messages
+Retrieves the latest messages for a conversation.
+
+*   **Endpoint:** `GET /conversations/:id/messages`
+*   **URL:** `http://localhost:3000/api/chat/conversations/12/messages`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "messages": [
+    {
+      "id": 100,
+      "conversation_id": 12,
+      "sender_id": 1,
+      "sender_username": "johndoe",
+      "content": "Hello!",
+      "created_at": "2026-01-12T12:34:56.000Z"
+    }
+  ]
+}
+```
+
+### 4. Create Group Room
+Creates a public group chat room.
+
+*   **Endpoint:** `POST /groups`
+*   **URL:** `http://localhost:3000/api/chat/groups`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body:**
+```json
+{
+  "name": "General Chat"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "group": {
+    "id": 15,
+    "name": "General Chat",
+    "type": "group"
+  }
+}
+```
+
+### 5. List Public Rooms
+Retrieves a list of all available public group rooms.
+
+*   **Endpoint:** `GET /groups`
+*   **URL:** `http://localhost:3000/api/chat/groups`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "groups": [
+    {
+      "id": 15,
+      "name": "General Chat",
+      "type": "group",
+      "created_at": "2026-01-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 6. Join Group Room
+Joins the current user to a specific group conversation.
+
+*   **Endpoint:** `POST /groups/:id/join`
+*   **URL:** `http://localhost:3000/api/chat/groups/15/join`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "message": "Joined successfully"
+}
+```
+
+---
+
+## 🔌 Socket.IO Events (Chat)
+
+The backend Socket.IO server expects the JWT token during the handshake.
+
+**Client connection example:**
+```js
+// Filename: frontend/src/... or any client script
+import { io } from "socket.io-client";
+
+const token = localStorage.getItem("accessToken");
+const socket = io("http://localhost:3000", {
+  auth: { token },
+});
+```
+
+### Events
+*   **Join conversation room:** `conversation:join`
+    *Payload:* `{ "conversationId": 12 }`
+*   **Send message:** `message:send`
+    *Payload:* `{ "conversationId": 12, "content": "hi" }`
+*   **Receive new message:** `message:new`
+    *Payload:* a message object (same shape as in `List Messages`)
+
+---
+
+## 🧪 Testing Chat
+
+### 1) Login and copy the token
+```bash
+curl -s -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"johndoe","password":"securePassword123"}'
+```
+
+### 2) Create/get a direct conversation
+```bash
+TOKEN="PASTE_TOKEN_HERE"
+
+curl -s -X POST http://localhost:3000/api/chat/conversations/direct \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"username":"target_username"}'
+```
+
+### 3) List messages
+```bash
+CONV_ID=12
+
+curl -s http://localhost:3000/api/chat/conversations/$CONV_ID/messages \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### 4) Test realtime delivery (Socket.IO)
+Use the provided script:
+
+```bash
+cd backend
+npm i socket.io-client
+TOKEN="PASTE_TOKEN_HERE" CONV_ID=12 node scripts/socket-test.js
+```
+
+Expected behavior:
+*   The script connects successfully
+*   Joins the conversation room
+*   Sends a test message
+*   Receives `message:new` back from the server
+
+
+---
+
+## 👤 Profile API Documentation
+
+### Base URL
+All profile routes are prefixed with: `/api/profile`
+
+**Note:** All endpoints below require the header: `Authorization: Bearer <token>`
+
+### 1. Get My Profile
+Returns the currently authenticated user's profile.
+
+*   **Endpoint:** `GET /me`
+*   **URL:** `http://localhost:3000/api/profile/me`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response (200):**
+```json
+{
+  "user": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "avatar_url": null,
+    "bio": null,
+    "role": "user",
+    "created_at": "2026-01-12T12:00:00.000Z",
+    "updated_at": "2026-01-12T12:00:00.000Z"
+  }
+}
+```
+
+### 2. Update My Profile
+Updates the currently authenticated user's profile (partial updates supported).
+
+*   **Endpoint:** `PUT /me`
+*   **URL:** `http://localhost:3000/api/profile/me`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Content-Type:** `application/json`
+
+**Request Body (example):**
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john_new@example.com",
+  "avatar_url": "https://example.com/avatar.png",
+  "bio": "Hello!",
+  "password": "newPassword123"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Profile updated",
+  "user": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "username": "johndoe",
+    "email": "john_new@example.com",
+    "avatar_url": "https://example.com/avatar.png",
+    "bio": "Hello!",
+    "role": "user",
+    "created_at": "2026-01-12T12:00:00.000Z",
+    "updated_at": "2026-01-12T12:10:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+*   `400 Bad Request`: No updatable fields provided.
+*   `409 Conflict`: Email already in use.
+*   `404 Not Found`: User not found.
+
+### 3. Delete My Account
+Deletes the currently authenticated user.
+
+*   **Endpoint:** `DELETE /me`
+*   **URL:** `http://localhost:3000/api/profile/me`
+*   **Headers:** `Authorization: Bearer <token>`
+
+**Success Response:**
+*   `204 No Content`
+
 ---
 
 ## ⚙️ Environment Variables
@@ -141,6 +571,7 @@ DB_PASSWORD=chat
 DB_NAME=chat_app
 DB_PORT=3306
 JWT_SECRET=.
+```
 
 ## 🗄️ Database Schema
 

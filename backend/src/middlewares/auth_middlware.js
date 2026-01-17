@@ -2,6 +2,7 @@ const express = require ('express');
 const jwt = require ('jsonwebtoken');
 const {User} = require ('../models/users');
 
+const {apiKey_auth_mw} = require ('./api_keys_middleware');
 
 const config = require ('../config/config');
 
@@ -36,8 +37,9 @@ async function auth_mw_login (req, res, next)
                         username: user.username,
                         role: user.role
         };
-        console.log (payload);
+
         const token = jwt.sign (payload, config.jwt_secret, {expiresIn: '1h'})
+        console.log (token);
         return  res.json ({message: 'Login successful', token})
     }
     catch (err)
@@ -51,10 +53,16 @@ async function auth_mw_login (req, res, next)
 
 async function auth_mw_register (req, res, next)
 {
-    console.log (req.body); // to be removed 
     if (!req.body)
     {
         return res.status (400).json ({message: 'Request body is missing. Check Content-Type header.'});
+    }
+
+    let avatar_url = null;
+
+    if (req.file)
+    {
+        avatar_url = `images/${req.file.filename}`;
     }
 
     const {firstname, lastname, username, email, password, role} = req.body;
@@ -94,7 +102,7 @@ async function auth_mw_register (req, res, next)
             return res.status (400).json ({message: 'Invalid role specified'});
         }
 
-        await usermodel.register (firstname, lastname, username, email, password, role);
+        await usermodel.register (firstname, lastname, username, email, password, role, avatar_url);
         next ();
     }
     catch (err)
@@ -104,4 +112,62 @@ async function auth_mw_register (req, res, next)
     }
 }
 
-module.exports = {auth_mw_login, auth_mw_register};
+async function auth_jwt_or_apikey_mw (req, res, next)
+{
+    const authHeader = req.headers['authorization'];
+    const apiKey = req.headers['x-api-key'];
+
+    // Try JWT first
+    if (authHeader && authHeader.startsWith('Bearer '))
+    {
+        const token = authHeader.split(' ')[1];
+        try
+        {
+            const decoded = jwt.verify(token, config.jwt_secret);
+            req.user = decoded;
+            return next();
+        } 
+        catch (err) 
+        {
+            // JWT failed, try API key if present
+            if (apiKey) {
+                return apiKey_auth_mw(req, res, next);
+            }
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
+    }
+
+    // Try API Key
+    if (apiKey)
+    {
+        return apiKey_auth_mw(req, res, next);
+    }
+    
+    return res.status(401).json({ 
+        message: 'Authentication required. Provide Bearer token or X-API-Key header.' 
+    });
+}
+
+async function auth_mw_token (req, res, next)
+{
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token)
+    {
+        return res.status (401).json ({message: 'Access token is missing'});
+    }
+
+    try
+    {
+        const decoded = jwt.verify (token, config.jwt_secret);
+        req.user = decoded;
+        next ();
+    }
+    catch (err)
+    {
+        return res.status (403).json ({message: 'Invalid or expired token'});
+    }
+}
+
+module.exports = {auth_mw_login, auth_mw_register, auth_jwt_or_apikey_mw, auth_mw_token};
