@@ -40,12 +40,9 @@ const AdminDashboard = () => {
 
     const handleSaveUser = (updatedUser: User) => {
         if (updatedUser.id === 0) {
-            // Create new user (simple mock)
             const newUser = { ...updatedUser, id: Math.max(...users.map(u => u.id)) + 1 };
             setUsers([...users, newUser]);
-            // Re-sort or handle order if needed
         } else {
-            // Update existing
             setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
         }
         setIsModalOpen(false);
