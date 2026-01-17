@@ -1,0 +1,91 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: chatapp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: chat_app
+      MYSQL_USER: chat
+      MYSQL_PASSWORD: chat
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app
+
+  backend:
+    build: ./backend
+    container_name: chatapp-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - app
+      - monitoring
+
+  frontend:
+    build: ./frontend
+    container_name: chatapp-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    networks:
+      - app
+
+  nginx:
+    image: nginx:alpine
+    container_name: chatapp-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app
+
+  prometheus:
+    image: prom/prometheus
+    container_name: chatapp-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    container_name: chatapp-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3001:3000"
+    networks:
+      - monitoring
+
+networks:
+  app:
+  monitoring:
+
+volumes:
+  mysql_data:
