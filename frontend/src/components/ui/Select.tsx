@@ -1,7 +1,20 @@
 // src/components/Select.jsx
 import React from 'react';
 
-const Select = ({ label, options = [], error, className = "", ...props }) => {
+interface SelectOption {
+    value: string | number;
+    label: string;
+}
+
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+    label?: string;
+    options?: SelectOption[];
+    error?: string;
+    className?: string; // Explicitly add specific props if needed, or let SelectHTMLAttributes handle standard ones
+}
+
+const Select: React.FC<SelectProps> = ({ label, options = [], error, className = "", ...props }) => {
+
     return (
         <div className={`flex flex-col gap-1 ${className}`}>
             {label && (

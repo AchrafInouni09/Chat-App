@@ -10,6 +10,8 @@ import FriendsPage from "./components/FriendsPage.tsx";
 import AdminDashboard from "./components/AdminDashboard.tsx";
 import PostsPage from "./components/PostsPage.tsx";
 import ApiKeysPage from "./components/ApiKeysPage.tsx";
+import ComponentsPage from "./components/ComponentsPage.tsx";
+
 import { checkRole, isJwtValid } from "./lib/utils";
 import Cookies from "js-cookie";
 
@@ -23,7 +25,7 @@ function ProtectedRoute({ children, role }: { children: ReactNode, role?: string
   if (role && !checkRole(token, role)) {
     return <Navigate to="/" />;
   }
-  return <>{children  }</>;
+  return <>{children}</>;
 }
 
 function App() {
@@ -31,14 +33,16 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/posts" element={<PostsPage />} />
+      <Route path="/components" element={<ComponentsPage />} />
+
+      <Route path="/posts" element={<ProtectedRoute role={["user", "admin"]}><PostsPage /></ProtectedRoute>} />
       <Route path="/chat" element={<ProtectedRoute role={["user", "admin"]}><ChatPage /></ProtectedRoute>} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
       <Route path="/profile" element={<ProtectedRoute role={["user", "admin"]}><ProfileField /></ProtectedRoute>} />
       <Route path="/add-friends" element={<ProtectedRoute role={["user", "admin"]}><AddFriendPage /></ProtectedRoute>} />
       <Route path="/friends" element={<ProtectedRoute role={["user", "admin"]}><FriendsPage /></ProtectedRoute>} />
-      <Route path="/admin" element={ <ProtectedRoute role={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute role={["admin"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute role={["user", "admin"]}><ApiKeysPage /></ProtectedRoute>} />
     </Routes>
   )

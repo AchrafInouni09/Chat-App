@@ -147,7 +147,7 @@ const AuthForm = () => {
 
                             <div>
                                 <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
-                                    Identity_String
+                                    First Name
                                 </label>
                                 <input
                                     type="text"
@@ -159,7 +159,7 @@ const AuthForm = () => {
 
                             <div>
                                 <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
-                                    Identity_String
+                                    Last Name
                                 </label>
                                 <input
                                     type="text"
