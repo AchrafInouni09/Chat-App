@@ -14,6 +14,8 @@ const PostsRoutes = require ('./src/routes/PostsRoutes');
 const { auth_mw_token } = require('./src/middlewares/auth_middlware');
 const {setupSocket} = require('./src/sockets/socketSetup');
 
+const apiKeyRoutes = require('./src/routes/ApiKeysRoutes');
+
 const app = express ();
 
 
@@ -37,6 +39,7 @@ app.use("/api/chat", auth_mw_token, chatRoutes);
 
 app.use("/api/profile", auth_mw_token, profileRoutes);
 
+app.use("/api/keys", auth_mw_token, apiKeyRoutes);
 
 app.get ('/', (req, res) => {
     res.send('hello from local host');
