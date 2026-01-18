@@ -46,14 +46,16 @@ services:
   nginx:
     image: nginx:alpine
     container_name: chatapp-nginx
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/entrypoint.sh:/entrypoint.sh
     depends_on:
       - frontend
       - backend
