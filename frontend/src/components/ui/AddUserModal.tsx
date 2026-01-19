@@ -1,49 +1,34 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from './Button';
 import Input from './Input';
 
-interface User {
-    id: number;
+interface NewUser {
     username: string;
-    firstName?: string;
-    lastName?: string;
-    password?: string;
-    confirmPassword?: string;
     email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    confirmPassword: string;
     role: string;
 }
 
-interface EditUserModalProps {
+interface AddUserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (user: User) => void;
-    user: User | null;
+    onAdd: (user: NewUser) => void;
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, user }) => {
-    const [formData, setFormData] = useState<User>({
-        id: 0,
+const AddUserModal: React.FC<AddUserModalProps> = ({ isOpen, onClose, onAdd }) => {
+    const [formData, setFormData] = useState<NewUser>({
         username: '',
+        email: '',
         firstName: '',
         lastName: '',
         password: '',
         confirmPassword: '',
-        email: '',
-        role: ''
+        role: 'user'
     });
-
-    useEffect(() => {
-        if (user) {
-            setFormData({
-                ...user,
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                password: user.password || '',
-                confirmPassword: user.confirmPassword || ''
-            });
-        }
-    }, [user]);
 
     if (!isOpen) return null;
 
@@ -58,14 +43,24 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(formData);
+        onAdd(formData);
+        // Reset form
+        setFormData({
+            username: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            password: '',
+            confirmPassword: '',
+            role: 'user'
+        });
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-grunge-white border-4 border-grunge-dark shadow-[8px_8px_0_#0f0f10] p-6 w-full max-w-md relative animate-in zoom-in-95 duration-200 bg-[#f0f0f0]">
                 <h2 className="text-2xl font-black uppercase mb-6 border-b-4 border-grunge-accent inline-block">
-                    Edit User
+                    Add New User
                 </h2>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -89,6 +84,50 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                         error=""
                         required
                     />
+
+                    <div className="flex gap-4">
+                        <Input
+                            label="First Name"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            placeholder="First Name"
+                            error=""
+                            required
+                        />
+                        <Input
+                            label="Last Name"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            placeholder="Last Name"
+                            error=""
+                            required
+                        />
+                    </div>
+
+                    <Input
+                        label="Password"
+                        name="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Enter password"
+                        error=""
+                        required
+                    />
+
+                    <Input
+                        label="Confirm Password"
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        error=""
+                        required
+                    />
+
                     <div className="flex flex-col gap-1">
                         <label className="uppercase font-bold text-grunge-gray text-xs block mb-1">
                             Role
@@ -118,7 +157,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
                             Cancel
                         </Button>
                         <Button variant="primary" type="submit">
-                            Save Changes
+                            Add User
                         </Button>
                     </div>
                 </form>
@@ -127,4 +166,4 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, onSave, 
     );
 };
 
-export default EditUserModal;
+export default AddUserModal;

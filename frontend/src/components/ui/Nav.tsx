@@ -6,11 +6,13 @@ import Cookies from "js-cookie";
 import { get_ProfileData } from '../../lib/utils';
 
 
+
 function Nav() {
   const navigate = useNavigate();
   const accessToken = Cookies.get("token");
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("ME");
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -19,6 +21,7 @@ function Nav() {
         if (userData && userData.user) {
           setUserAvatar(userData.user.avatar_url || null);
           setUserInitial(userData.user.username?.[0]?.toUpperCase() || "ME");
+          setUserRole(userData.user.role || null);
         }
       }
     };
@@ -47,6 +50,9 @@ function Nav() {
             <Link to="/posts" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Posts</Link>
             <Link to="/friends" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">Friends</Link>
             <Link to="/api-keys" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">API</Link>
+            {userRole === "admin" && (
+              <Link to="/admin" className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase">ADMIN</Link>
+            )}
             <button
               onClick={handleLogout}
               className="hidden md:inline-block font-bold hover:text-grunge-accent hover:underline decoration-2 underline-offset-4 uppercase bg-transparent border-none cursor-pointer"

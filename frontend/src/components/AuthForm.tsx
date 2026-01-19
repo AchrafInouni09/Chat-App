@@ -47,7 +47,6 @@ const AuthForm = () => {
             let response;
 
             if (!isLogin) {
-                // Use FormData for file upload during registration
                 const formData = new FormData();
                 formData.append('firstname', data.firstname || '');
                 formData.append('lastname', data.lastname || '');
@@ -63,7 +62,6 @@ const AuthForm = () => {
                 response = await fetch("http://localhost:3000/api/auth/register", {
                     method: "POST",
                     body: formData,
-                    // Don't set Content-Type - browser sets it automatically with boundary
                 });
             }
             else {
