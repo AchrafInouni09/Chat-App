@@ -204,6 +204,34 @@ class User
         const term = `%${searchTerm}%`;
         return await this.Db.select(query, [currentUserId, term, term, term]);
     }
+
+    async AddUser (firstname, lastname , username, email, role, password)
+    {
+        const query = `insert into users (first_name, last_name, username, email, role, password_hash) values (?,?, ?, ?, ?, ?)`;
+        const results = await this.Db.select (query, [firstname, lastname, username, email, role, password]);
+        return results;
+    }
+
+    async GetAllUsers ()
+    {
+        const query = `select id, username, email, role from users`;
+        const results = await this.Db.select (query, []);
+        return results;
+    }
+
+    async DeleteUser (userid)
+    {
+        const query = `delete from users where id = ?`;
+        const results = await this.Db.select (query, [userid]);
+        return results;
+    }
+
+    async UpdateUser (userid, username, email, role)
+    {
+        const query = `update users set username = ?, email = ?, role = ? where id = ?`;
+        const results = await this.Db.select (query, [username, email, role, userid]);
+        return results;
+    }
     
 }
 module.exports  = {User};

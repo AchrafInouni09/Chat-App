@@ -10,13 +10,16 @@ const profileRoutes = require("./src/routes/ProfileRoutes");
 const cors = require ('cors');
 const path = require ('path');
 const PostsRoutes = require ('./src/routes/PostsRoutes');
+const UsersRoutes = require ('./src/routes/UsersRoutes');
 
-const { auth_mw_token } = require('./src/middlewares/auth_middlware');
+const { auth_mw_token, Priority_login_mw } = require('./src/middlewares/auth_middlware');
 const {setupSocket} = require('./src/sockets/socketSetup');
 
 const apiKeyRoutes = require('./src/routes/ApiKeysRoutes');
 
 const app = express ();
+
+app.set('trust proxy', true);
 
 
 app.use (cors({
@@ -40,6 +43,8 @@ app.use("/api/chat", auth_mw_token, chatRoutes);
 app.use("/api/profile", auth_mw_token, profileRoutes);
 
 app.use("/api/keys", auth_mw_token, apiKeyRoutes);
+
+app.use('/api/users', Priority_login_mw, UsersRoutes);
 
 app.get ('/', (req, res) => {
     res.send('hello from local host');

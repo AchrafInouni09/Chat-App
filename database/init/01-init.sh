@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     avatar_url VARCHAR(255) DEFAULT NULL,
     bio TEXT DEFAULT NULL,
-    role ENUM('admin', 'user', 'moderator', 'guest') DEFAULT 'user',
+    role ENUM('admin', 'user') DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

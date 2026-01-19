@@ -170,4 +170,32 @@ async function auth_mw_token (req, res, next)
     }
 }
 
-module.exports = {auth_mw_login, auth_mw_register, auth_jwt_or_apikey_mw, auth_mw_token};
+
+async function Priority_login_mw (req, res, next)
+{
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token)
+    {
+        return res.status (401).json ({message: 'Access token is missing'});
+    }
+
+    try
+    {
+        const decoded = jwt.verify (token, config.jwt_secret);
+        req.user = decoded;
+
+        if (decoded.role !== 'admin')
+        {
+            return res.status(403).json({message: 'Admin access required'});
+        }
+        next ();
+    }
+    catch (err)
+    {
+        return res.status (403).json ({message: 'Invalid or expired token'});
+    }
+}
+
+module.exports = {auth_mw_login, auth_mw_register, auth_jwt_or_apikey_mw, auth_mw_token, Priority_login_mw};
