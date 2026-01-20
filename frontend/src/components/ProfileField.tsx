@@ -8,6 +8,7 @@ import Button from './ui/Button';
 import CryptoHover from './ui/CryptoHover';
 import Nav from './ui/Nav';
 import { get_ProfileData, update_ProfileData, delete_Profile } from '../lib/utils';
+import LoadingPage from './ui/LoadingPage';
 import Cookies from 'js-cookie';
 
 
@@ -40,10 +41,14 @@ const ProfileField = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [pageLoading, setPageLoading] = useState(true);
     //test data li khasani 
     useEffect(() => {
         const fetchData = async () => {
+            setPageLoading(true);
             const userData = await get_ProfileData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            setPageLoading(false);
             console.log("Fetched user data:", userData);
             if (userData) {
                 // console.log(userData);
@@ -84,7 +89,6 @@ const ProfileField = ({
             avatar: avatarFile,
             firstName,
             lastName,
-            username,
             bio
         });
 
@@ -115,6 +119,7 @@ const ProfileField = ({
 
     return (
         <div className="min-h-screen flex flex-col">
+            {pageLoading && <LoadingPage />}
             <Nav />
             <div className={`flex-grow flex items-center justify-center p-4 md:p-8 ${className}`}>
                 <div className="w-full max-w-4xl group/card">

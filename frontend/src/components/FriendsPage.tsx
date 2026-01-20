@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Nav from './ui/Nav';
 import Avatar from './ui/Avatar';
 import CryptoHover from './ui/CryptoHover';
+import LoadingPage from './ui/LoadingPage';
 import Cookies from 'js-cookie';
 
 interface Friend {
@@ -19,7 +20,7 @@ const FriendsPage = () => {
     const [friends, setFriends] = useState<Friend[]>([]);
     const [loading, setLoading] = useState(true);
     const [startingChat, setStartingChat] = useState<number | null>(null);
-    
+
     const token = Cookies.get('token');
     const API_URL = 'http://localhost:3000';
 
@@ -29,6 +30,7 @@ const FriendsPage = () => {
 
     const fetchFriends = async () => {
         try {
+            setLoading(true);
             const res = await fetch(`${API_URL}/api/friends/list`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -37,6 +39,7 @@ const FriendsPage = () => {
         } catch (err) {
             console.error('Error fetching friends:', err);
         } finally {
+            await new Promise(resolve => setTimeout(resolve, 500));
             setLoading(false);
         }
     };
@@ -46,13 +49,13 @@ const FriendsPage = () => {
         try {
             const res = await fetch(`${API_URL}/api/chat/conversation/direct`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ username })
             });
-            
+
             if (res.ok) {
                 const data = await res.json();
                 // Navigate to chat with this conversation active
@@ -67,17 +70,17 @@ const FriendsPage = () => {
 
     const removeFriend = async (username: string) => {
         if (!window.confirm(`Remove ${username} from friends?`)) return;
-        
+
         try {
             const res = await fetch(`${API_URL}/api/friends/remove`, {
                 method: 'DELETE',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ username })
             });
-            
+
             if (res.ok) {
                 setFriends(prev => prev.filter(f => f.username !== username));
             }
@@ -89,7 +92,7 @@ const FriendsPage = () => {
     return (
         <div className="min-h-screen bg-grunge-white">
             <Nav />
-            
+
             <div className="max-w-6xl mx-auto p-8">
                 {/* Header */}
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-4 border-grunge-dark pb-6 mb-8">
@@ -119,11 +122,8 @@ const FriendsPage = () => {
                 </header>
 
                 {/* Loading State */}
-                {loading && (
-                    <div className="text-center py-12">
-                        <p className="font-mono text-grunge-gray animate-pulse">LOADING_CONNECTIONS...</p>
-                    </div>
-                )}
+                {loading && <LoadingPage />}
+
 
                 {/* Empty State */}
                 {!loading && friends.length === 0 && (
@@ -143,8 +143,8 @@ const FriendsPage = () => {
                 {!loading && friends.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {friends.map((friend) => (
-                            <div 
-                                key={friend.id} 
+                            <div
+                                key={friend.id}
                                 className="border-4 border-grunge-dark bg-grunge-white p-6 shadow-[6px_6px_0_#0f0f10] hover:shadow-[8px_8px_0_#0f0f10] hover:-translate-y-1 transition-all"
                             >
                                 {/* Friend Info */}

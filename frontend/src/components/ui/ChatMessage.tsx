@@ -8,6 +8,7 @@ interface ChatMessageProps {
     avatarFallback: string;
     avatarSrc?: string;
     isOwn?: boolean;
+    isLast?: boolean;
     bubbleClassName?: string;
 }
 
@@ -18,6 +19,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     avatarFallback,
     avatarSrc,
     isOwn = false,
+    isLast = false,
     bubbleClassName = "",
 }) => {
     return (
@@ -43,6 +45,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                             ? 'bg-grunge-accent text-grunge-white shadow-[4px_4px_0_rgba(255,42,42,0.6)]'
                             : 'bg-grunge-white text-grunge-dark shadow-[4px_4px_0_rgba(15,15,16,0.3)]'
                         }
+                        ${isLast ? 'animate-border-pulse' : ''}
                         ${bubbleClassName}
                     `}
                 >

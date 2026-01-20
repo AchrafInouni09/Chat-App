@@ -7,6 +7,7 @@ import AddUserModal from './ui/AddUserModal';
 import Button from './ui/Button';
 import { UserPlus } from 'lucide-react';
 import CryptoHover from './ui/CryptoHover';
+import LoadingPage from './ui/LoadingPage';
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 
@@ -27,9 +28,12 @@ const AdminDashboard = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+    const [loading, setLoading] = useState(true);
+
 
     useEffect(() => {
         const featchData = async () => {
+            setLoading(true);
             try {
                 const response = await fetch('http://localhost:3000/api/users', {
                     method: 'GET',
@@ -43,6 +47,9 @@ const AdminDashboard = () => {
                 setUsers(data.users);
             } catch (error) {
                 console.error('Error fetching users:', error);
+            } finally {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                setLoading(false);
             }
         }
         featchData();
@@ -127,6 +134,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="min-h-screen bg-[#f0f0f0] font-sans pb-20">
+            {loading && <LoadingPage />}
             <Nav />
 
             <main className="container mx-auto px-4 pt-10 max-w-5xl">

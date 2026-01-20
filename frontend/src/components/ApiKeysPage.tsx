@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nav from './ui/Nav';
 import CryptoHover from './ui/CryptoHover';
+import LoadingPage from './ui/LoadingPage';
 import Cookies from 'js-cookie';
 import { Copy, Trash2, Key, Plus, Book, Code, Terminal } from 'lucide-react';
 
@@ -66,6 +67,7 @@ const ApiKeysPage = () => {
             console.error('Error fetching API keys:', err);
             setError('Failed to load API keys');
         } finally {
+            await new Promise(resolve => setTimeout(resolve, 500));
             setLoading(false);
         }
     };
@@ -160,22 +162,20 @@ const ApiKeysPage = () => {
                 <div className="flex gap-4 mb-8 border-b-2 border-grunge-dark">
                     <button
                         onClick={() => setActiveTab('keys')}
-                        className={`font-mono text-sm uppercase px-4 py-3 border-b-4 -mb-[2px] transition-colors ${
-                            activeTab === 'keys'
-                                ? 'border-grunge-accent text-grunge-dark font-bold'
-                                : 'border-transparent text-grunge-gray hover:text-grunge-dark'
-                        }`}
+                        className={`font-mono text-sm uppercase px-4 py-3 border-b-4 -mb-[2px] transition-colors ${activeTab === 'keys'
+                            ? 'border-grunge-accent text-grunge-dark font-bold'
+                            : 'border-transparent text-grunge-gray hover:text-grunge-dark'
+                            }`}
                     >
                         <Key className="inline-block w-4 h-4 mr-2" />
                         My Keys
                     </button>
                     <button
                         onClick={() => setActiveTab('docs')}
-                        className={`font-mono text-sm uppercase px-4 py-3 border-b-4 -mb-[2px] transition-colors ${
-                            activeTab === 'docs'
-                                ? 'border-grunge-accent text-grunge-dark font-bold'
-                                : 'border-transparent text-grunge-gray hover:text-grunge-dark'
-                        }`}
+                        className={`font-mono text-sm uppercase px-4 py-3 border-b-4 -mb-[2px] transition-colors ${activeTab === 'docs'
+                            ? 'border-grunge-accent text-grunge-dark font-bold'
+                            : 'border-transparent text-grunge-gray hover:text-grunge-dark'
+                            }`}
                     >
                         <Book className="inline-block w-4 h-4 mr-2" />
                         Documentation
@@ -202,7 +202,7 @@ const ApiKeysPage = () => {
                             <p className="font-mono text-sm text-grunge-gray mb-4">
                                 Save this key now. It will not be shown again!
                             </p>
-                            
+
                             <div className="bg-grunge-dark text-grunge-white p-4 font-mono text-sm break-all relative">
                                 {newlyCreatedKey.key}
                                 <button
@@ -212,7 +212,7 @@ const ApiKeysPage = () => {
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
-                            
+
                             {copied && (
                                 <p className="font-mono text-xs text-green-600 mt-2">✓ Copied to clipboard!</p>
                             )}
@@ -295,9 +295,7 @@ const ApiKeysPage = () => {
                             </div>
 
                             {loading ? (
-                                <div className="p-8 text-center">
-                                    <p className="font-mono text-grunge-gray animate-pulse">LOADING_KEYS...</p>
-                                </div>
+                                <LoadingPage />
                             ) : apiKeys.length === 0 ? (
                                 <div className="p-8 text-center">
                                     <p className="font-mono text-grunge-gray">No API keys yet. Create one above!</p>
@@ -335,10 +333,10 @@ const ApiKeysPage = () => {
                         <div className="border-2 border-grunge-dark p-6">
                             <h2 className="font-display text-2xl uppercase mb-4">📡 Posts API Overview</h2>
                             <p className="font-mono text-sm text-grunge-gray leading-relaxed">
-                                The Posts API allows you to programmatically create, read, update, and delete posts. 
+                                The Posts API allows you to programmatically create, read, update, and delete posts.
                                 You can authenticate using either a JWT token or an API key.
                             </p>
-                            
+
                             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-grunge-dark text-grunge-white p-4">
                                     <h4 className="font-mono font-bold mb-2">Base URL</h4>
@@ -518,7 +516,7 @@ const ApiKeysPage = () => {
                         {/* Response Examples */}
                         <div className="border-2 border-grunge-dark p-6">
                             <h2 className="font-display text-2xl uppercase mb-4">📦 Response Examples</h2>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <p className="font-mono text-sm font-bold mb-2">Success Response (Create Post)</p>

@@ -13,6 +13,9 @@ export default {
                 'grunge-accent': '#ff2a2a',
                 'grunge-gray': '#555555',
                 'grunge-green': '#00ff41',
+                'neon-purple': '#7C5CFF',
+                'neon-pink': '#E033FF',
+                'neon-cyan': '#00D1FF',
             },
             fontFamily: {
                 'display': ['"Abril Fatface"', 'serif'],
@@ -25,6 +28,7 @@ export default {
                 'glitch': 'glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
                 'ticker': 'ticker 20s linear infinite',
                 'loading-slide': 'loadingSlide 1s infinite linear',
+                'scanline': 'scanline 4s linear infinite',
             },
             keyframes: {
                 glitch: {
@@ -42,6 +46,10 @@ export default {
                 loadingSlide: {
                     'from': { left: '-50%' },
                     'to': { left: '100%' },
+                },
+                scanline: {
+                    '0%': { transform: 'translateY(-100%)' },
+                    '100%': { transform: 'translateY(100%)' },
                 }
             }
         },

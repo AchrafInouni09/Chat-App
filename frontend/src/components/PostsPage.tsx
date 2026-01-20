@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Nav from './ui/Nav';
 import Avatar from './ui/Avatar';
 import CryptoHover from './ui/CryptoHover';
+import LoadingPage from './ui/LoadingPage';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 
@@ -43,16 +44,16 @@ const PostsPage = () => {
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    
+
     // Tab state for switching between all posts and my posts
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
-    
+
     // Comments state
     const [expandedComments, setExpandedComments] = useState<number | null>(null);
     const [comments, setComments] = useState<{ [postId: number]: Comment[] }>({});
     const [newComment, setNewComment] = useState<{ [postId: number]: string }>({});
     const [loadingComments, setLoadingComments] = useState<number | null>(null);
-    
+
     // Edit state
     const [editingPost, setEditingPost] = useState<number | null>(null);
     const [editContent, setEditContent] = useState('');
@@ -62,7 +63,7 @@ const PostsPage = () => {
 
     let currentUserId: number | null = null;
     let currentUsername: string | null = null;
-    
+
     if (token) {
         try {
             const decoded = jwtDecode<JwtPayload>(token);
@@ -101,6 +102,7 @@ const PostsPage = () => {
             console.error('Error fetching posts:', err);
             setError('Failed to load posts');
         } finally {
+            await new Promise(resolve => setTimeout(resolve, 500));
             setLoading(false);
         }
     };
@@ -121,6 +123,7 @@ const PostsPage = () => {
             console.error('Error fetching my posts:', err);
             setError('Failed to load your posts');
         } finally {
+            await new Promise(resolve => setTimeout(resolve, 500));
             setLoading(false);
         }
     };
@@ -142,7 +145,7 @@ const PostsPage = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     content: newPostContent,
                     visibility: newPostVisibility
                 })
@@ -237,8 +240,8 @@ const PostsPage = () => {
             });
 
             if (res.ok) {
-                setPosts(prev => prev.map(p => 
-                    p.id === postId 
+                setPosts(prev => prev.map(p =>
+                    p.id === postId
                         ? { ...p, like_count: p.like_count + 1, isLiked: true }
                         : p
                 ));
@@ -258,8 +261,8 @@ const PostsPage = () => {
             });
 
             if (res.ok) {
-                setPosts(prev => prev.map(p => 
-                    p.id === postId 
+                setPosts(prev => prev.map(p =>
+                    p.id === postId
                         ? { ...p, like_count: Math.max(0, p.like_count - 1), isLiked: false }
                         : p
                 ));
@@ -316,8 +319,8 @@ const PostsPage = () => {
             if (res.ok) {
                 setNewComment(prev => ({ ...prev, [postId]: '' }));
                 fetchComments(postId);
-                setPosts(prev => prev.map(p => 
-                    p.id === postId 
+                setPosts(prev => prev.map(p =>
+                    p.id === postId
                         ? { ...p, comment_count: p.comment_count + 1 }
                         : p
                 ));
@@ -341,8 +344,8 @@ const PostsPage = () => {
                     ...prev,
                     [postId]: prev[postId].filter(c => c.id !== commentId)
                 }));
-                setPosts(prev => prev.map(p => 
-                    p.id === postId 
+                setPosts(prev => prev.map(p =>
+                    p.id === postId
                         ? { ...p, comment_count: Math.max(0, p.comment_count - 1) }
                         : p
                 ));
@@ -385,22 +388,20 @@ const PostsPage = () => {
                 <div className="flex gap-4 mb-6">
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`font-mono text-sm uppercase px-4 py-2 border-2 border-grunge-dark transition-colors ${
-                            activeTab === 'all' 
-                                ? 'bg-grunge-dark text-grunge-white' 
-                                : 'bg-grunge-white text-grunge-dark hover:bg-grunge-dark/10'
-                        }`}
+                        className={`font-mono text-sm uppercase px-4 py-2 border-2 border-grunge-dark transition-colors ${activeTab === 'all'
+                            ? 'bg-grunge-dark text-grunge-white'
+                            : 'bg-grunge-white text-grunge-dark hover:bg-grunge-dark/10'
+                            }`}
                     >
                         All Posts
                     </button>
                     {token && (
                         <button
                             onClick={() => setActiveTab('my')}
-                            className={`font-mono text-sm uppercase px-4 py-2 border-2 border-grunge-dark transition-colors ${
-                                activeTab === 'my' 
-                                    ? 'bg-grunge-dark text-grunge-white' 
-                                    : 'bg-grunge-white text-grunge-dark hover:bg-grunge-dark/10'
-                            }`}
+                            className={`font-mono text-sm uppercase px-4 py-2 border-2 border-grunge-dark transition-colors ${activeTab === 'my'
+                                ? 'bg-grunge-dark text-grunge-white'
+                                : 'bg-grunge-white text-grunge-dark hover:bg-grunge-dark/10'
+                                }`}
                         >
                             My Posts
                         </button>
@@ -461,11 +462,7 @@ const PostsPage = () => {
                 )}
 
                 {/* Loading */}
-                {loading && (
-                    <div className="text-center py-12">
-                        <p className="font-mono text-grunge-gray animate-pulse">LOADING_FEED...</p>
-                    </div>
-                )}
+                {loading && <LoadingPage />}
 
                 {/* Posts List */}
                 {!loading && posts.length === 0 && (
@@ -477,8 +474,8 @@ const PostsPage = () => {
 
                 <div className="space-y-6">
                     {posts.map((post) => (
-                        <div 
-                            key={post.id} 
+                        <div
+                            key={post.id}
                             className="border-4 border-grunge-dark bg-grunge-white shadow-[4px_4px_0_#0f0f10] overflow-hidden"
                         >
                             {/* Post Header */}
@@ -552,11 +549,10 @@ const PostsPage = () => {
                             <div className="flex items-center gap-4 px-4 py-3 border-t-2 border-grunge-dark bg-grunge-dark/5">
                                 <button
                                     onClick={() => post.isLiked ? handleUnlike(post.id) : handleLike(post.id)}
-                                    className={`flex items-center gap-2 font-mono text-sm transition-colors ${
-                                        post.isLiked 
-                                            ? 'text-grunge-accent' 
-                                            : 'text-grunge-gray hover:text-grunge-accent'
-                                    }`}
+                                    className={`flex items-center gap-2 font-mono text-sm transition-colors ${post.isLiked
+                                        ? 'text-grunge-accent'
+                                        : 'text-grunge-gray hover:text-grunge-accent'
+                                        }`}
                                 >
                                     <span>{post.isLiked ? '❤️' : '🤍'}</span>
                                     <span>{post.like_count}</span>

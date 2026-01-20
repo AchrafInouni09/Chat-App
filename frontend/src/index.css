@@ -20,6 +20,7 @@
   --animate-glitch: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
   --animate-ticker: ticker 20s linear infinite;
   --animate-loading-slide: loadingSlide 1s infinite linear;
+  --animate-border-pulse: border-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
   /* CSS Variables for utilities */
   --c-dark: #0f0f10;
@@ -60,6 +61,21 @@
     }
   }
 
+  @keyframes scanline {
+    0% {
+      transform: translateY(0%);
+    }
+
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  /* Neon Colors */
+  --color-neon-purple: #7C5CFF;
+  --color-neon-pink: #E033FF;
+  --color-neon-cyan: #00D1FF;
+
   @keyframes loadingSlide {
     from {
       left: -50%;
@@ -67,6 +83,20 @@
 
     to {
       left: 100%;
+    }
+  }
+
+  @keyframes border-pulse {
+
+    0%,
+    100% {
+      border-color: var(--color-grunge-dark);
+      box-shadow: 4px 4px 0 var(--color-grunge-dark);
+    }
+
+    50% {
+      border-color: var(--color-grunge-accent);
+      box-shadow: 4px 4px 0 var(--color-grunge-accent);
     }
   }
 }

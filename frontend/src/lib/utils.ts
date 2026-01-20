@@ -50,11 +50,11 @@ export async function update_ProfileData(profileData: {
   try {
     // Use FormData to support file upload
     const formData = new FormData();
-    
+
     if (profileData.firstName) formData.append('first_name', profileData.firstName);
     if (profileData.lastName) formData.append('last_name', profileData.lastName);
     if (profileData.bio) formData.append('bio', profileData.bio);
-    
+
     // If avatar is a File object (new upload), append it
     if (profileData.avatar instanceof File) {
       formData.append('avatar', profileData.avatar);
@@ -105,12 +105,12 @@ export async function get_ProfileData() {
     }
 
     const data = await response.json();
-    
+
     // Prepend backend URL to avatar_url if it exists and is a relative path
     if (data.user && data.user.avatar_url && !data.user.avatar_url.startsWith('http')) {
       data.user.avatar_url = `http://localhost:3000/${data.user.avatar_url}`;
     }
-    
+
     return data;
   } catch (error) {
     console.error("Error fetching profile:", error);

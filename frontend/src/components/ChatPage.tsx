@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Nav from './ui/Nav';
 import Avatar from './ui/Avatar';
@@ -6,6 +6,7 @@ import Button from './ui/Button';
 import Input from './ui/Input';
 import SideFriendReq from './ui/SideFriendReq';
 import ChatMessage from './ui/ChatMessage';
+import LoadingPage from './ui/LoadingPage';
 import Cookies from 'js-cookie';
 import { io } from "socket.io-client";
 import { jwtDecode } from 'jwt-decode';
@@ -45,6 +46,7 @@ const ChatPage = () => {
     const [newRoomName, setNewRoomName] = useState("");
     const [newDmUsername, setNewDmUsername] = useState("");
     const [dmError, setDmError] = useState("");
+    const [loading, setLoading] = useState(true);
     const socketRef = useRef<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -65,8 +67,19 @@ const ChatPage = () => {
 
     // 1. Initial Data Fetch & Socket Setup
     useEffect(() => {
-        fetchConversations();
-        fetchPublicRooms();
+        const initChat = async () => {
+            setLoading(true);
+            const [convs] = await Promise.all([fetchConversations(), fetchPublicRooms()]);
+
+            // Auto-select first conversation if none selected via navigation state
+            if (!activeConvId && convs && convs.length > 0) {
+                setActiveConvId(convs[0].id);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+            setLoading(false);
+        };
+        initChat();
 
         // Socket Setup
         socketRef.current = io("http://localhost:3000", {
@@ -127,6 +140,11 @@ const ChatPage = () => {
             });
     }, [activeConvId, currentUsername]);
 
+    // 4. Auto-scroll to bottom whenever messages change
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
     const fetchConversations = async () => {
@@ -134,7 +152,9 @@ const ChatPage = () => {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        setConversations(data.conversations || []);
+        const convs = data.conversations || [];
+        setConversations(convs);
+        return convs;
     };
 
     const fetchPublicRooms = async () => {
@@ -220,6 +240,7 @@ const ChatPage = () => {
 
     return (
         <div className="h-screen bg-grunge-white font-mono flex flex-col overflow-hidden">
+            {loading && <LoadingPage />}
             <Nav />
 
             <div className="flex-1 flex max-w-7xl mx-auto w-full p-4 md:p-8 gap-6 min-h-0">
@@ -344,6 +365,7 @@ const ChatPage = () => {
                                 avatarFallback={msg.sender_username[0]?.toUpperCase()}
                                 avatarSrc={msg.avatar_url || undefined}
                                 isOwn={msg.isOwn}
+                                isLast={idx === messages.length - 1}
                             />
                         ))}
                         <div ref={messagesEndRef} />
