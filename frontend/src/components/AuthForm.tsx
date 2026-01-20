@@ -97,21 +97,27 @@ const AuthForm = () => {
             <div className="flex gap-4 border-b-2 border-grunge-dark pb-2 mb-2">
                 <button
                     className={`bg-transparent border-none font-mono font-bold text-base cursor-pointer transition-all ${isLogin ? 'opacity-100 underline text-grunge-accent' : 'opacity-50 hover:opacity-100 text-grunge-dark'}`}
-                    onClick={() => setIsLogin(true)}
+                    onClick={() => {
+                        setIsLogin(true);
+                        setError(null);
+                    }}
                 >
                     LOGIN
                 </button>
                 <span className="text-grunge-gray">/</span>
                 <button
                     className={`bg-transparent border-none font-mono font-bold text-base cursor-pointer transition-all ${!isLogin ? 'opacity-100 underline text-grunge-accent' : 'opacity-50 hover:opacity-100 text-grunge-dark'}`}
-                    onClick={() => setIsLogin(false)}
+                    onClick={() => {
+                        setIsLogin(false);
+                        setError(null);
+                    }}
                 >
                     REGISTER
                 </button>
             </div>
 
             <div className="flex flex-col gap-4">
-                {isLogin && error && (
+                {error && (
                     <div className="text-red-600 font-mono text-xs border-2 border-red-600 bg-red-50 p-3">
                         ⚠ {error}
                     </div>
