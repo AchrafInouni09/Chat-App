@@ -79,6 +79,7 @@ const Avatar = ({ src, alt, fallback, size = "md", className = "" }) => {
     };
 
     const [imageError, setImageError] = React.useState(false);
+    console.log(src);
 
     return (
         <div className={`relative inline-block ${sizes[size]} ${className}`}>

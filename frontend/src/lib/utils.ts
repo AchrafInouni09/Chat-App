@@ -16,7 +16,7 @@ export async function delete_Profile() {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/api/Profile/me', {
+    const response = await fetch('/api/Profile/me', {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -60,11 +60,10 @@ export async function update_ProfileData(profileData: {
       formData.append('avatar', profileData.avatar);
     }
 
-    const response = await fetch('http://localhost:3000/api/Profile/me', {
+    const response = await fetch('/api/Profile/me', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
-        // Don't set Content-Type - browser sets it automatically with boundary for FormData
       },
       body: formData,
     });
@@ -75,7 +74,7 @@ export async function update_ProfileData(profileData: {
     }
 
     const data = await response.json();
-    console.log("Updated profile data:", data);
+    // console.log("Updated profile data:", data);
     return { success: true, data };
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -105,11 +104,9 @@ export async function get_ProfileData() {
     }
 
     const data = await response.json();
+    // data.user.avatar_url = `/api/${data.user.avatar_url}`;
+    console.log(data.user.avatar_url);
 
-    // Prepend backend URL to avatar_url if it exists and is a relative path
-    if (data.user && data.user.avatar_url && !data.user.avatar_url.startsWith('http')) {
-      data.user.avatar_url = `http://localhost:3000/${data.user.avatar_url}`;
-    }
 
     return data;
   } catch (error) {

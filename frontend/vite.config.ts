@@ -11,4 +11,19 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://localhost',
+        secure: false,
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'https://localhost',
+        secure: false,
+        ws: true,
+        changeOrigin: true,
+      },
+    },
+  },
 })

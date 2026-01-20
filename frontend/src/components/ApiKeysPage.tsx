@@ -340,7 +340,7 @@ const ApiKeysPage = () => {
                             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-grunge-dark text-grunge-white p-4">
                                     <h4 className="font-mono font-bold mb-2">Base URL</h4>
-                                    <code className="text-grunge-accent">http://localhost:3000/api/posts</code>
+                                    <code className="text-grunge-accent">https://localhost:3000/api/posts</code>
                                 </div>
                                 <div className="bg-grunge-dark text-grunge-white p-4">
                                     <h4 className="font-mono font-bold mb-2">Authentication Header</h4>
@@ -381,7 +381,7 @@ const ApiKeysPage = () => {
                                     <p className="font-mono text-sm text-grunge-gray mb-4">List all public posts (no auth required)</p>
                                     <div className="bg-gray-100 p-4 font-mono text-sm overflow-x-auto">
                                         <p className="text-grunge-gray"># Example</p>
-                                        <p>curl http://localhost:3000/api/posts</p>
+                                        <p>curl https://localhost:3000/api/posts</p>
                                     </div>
                                 </div>
 
@@ -395,7 +395,7 @@ const ApiKeysPage = () => {
                                     <div className="bg-gray-100 p-4 font-mono text-sm overflow-x-auto">
                                         <p className="text-grunge-gray"># Example with API Key</p>
                                         <p>curl -H "X-API-Key: your_key" \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/my</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/my</p>
                                     </div>
                                 </div>
 
@@ -412,7 +412,7 @@ const ApiKeysPage = () => {
                                         <p className="ml-4">-H "X-API-Key: your_key" \</p>
                                         <p className="ml-4">-H "Content-Type: application/json" \</p>
                                         <p className="ml-4">-d '{`{"content": "Hello from API!", "visibility": "public"}`}' \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts</p>
                                     </div>
                                 </div>
 
@@ -429,7 +429,7 @@ const ApiKeysPage = () => {
                                         <p className="ml-4">-H "X-API-Key: your_key" \</p>
                                         <p className="ml-4">-H "Content-Type: application/json" \</p>
                                         <p className="ml-4">-d '{`{"content": "Updated content"}`}' \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/1</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/1</p>
                                     </div>
                                 </div>
 
@@ -444,7 +444,7 @@ const ApiKeysPage = () => {
                                         <p className="text-grunge-gray"># Example</p>
                                         <p>curl -X DELETE \</p>
                                         <p className="ml-4">-H "X-API-Key: your_key" \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/1</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/1</p>
                                     </div>
                                 </div>
 
@@ -459,7 +459,7 @@ const ApiKeysPage = () => {
                                         <p className="text-grunge-gray"># Example</p>
                                         <p>curl -X POST \</p>
                                         <p className="ml-4">-H "X-API-Key: your_key" \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/1/like</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/1/like</p>
                                     </div>
                                 </div>
 
@@ -476,7 +476,7 @@ const ApiKeysPage = () => {
                                         <p className="ml-4">-H "X-API-Key: your_key" \</p>
                                         <p className="ml-4">-H "Content-Type: application/json" \</p>
                                         <p className="ml-4">-d '{`{"content": "Nice post!"}`}' \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/1/comments</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/1/comments</p>
                                     </div>
                                 </div>
                             </div>
@@ -497,7 +497,7 @@ const ApiKeysPage = () => {
                                     <p className="font-mono text-sm font-bold mb-2">2. Test Your Key</p>
                                     <div className="bg-grunge-dark text-grunge-white p-4 font-mono text-sm overflow-x-auto">
                                         <p>curl -H "X-API-Key: YOUR_API_KEY" \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts/my</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts/my</p>
                                     </div>
                                 </div>
                                 <div>
@@ -507,7 +507,7 @@ const ApiKeysPage = () => {
                                         <p className="ml-4">-H "X-API-Key: YOUR_API_KEY" \</p>
                                         <p className="ml-4">-H "Content-Type: application/json" \</p>
                                         <p className="ml-4">-d '{`{"content": "My first API post!", "visibility": "public"}`}' \</p>
-                                        <p className="ml-4">http://localhost:3000/api/posts</p>
+                                        <p className="ml-4">https://localhost:3000/api/posts</p>
                                     </div>
                                 </div>
                             </div>

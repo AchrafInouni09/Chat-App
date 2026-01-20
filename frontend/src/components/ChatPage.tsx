@@ -82,10 +82,16 @@ const ChatPage = () => {
         initChat();
 
         // Socket Setup
-        socketRef.current = io("/", {
-            auth: { token },
-            transports: ["websocket"]
-        });
+        if (token) {
+            socketRef.current = io("/", {
+                path: '/socket.io/',
+                auth: { token },
+                transports: ["polling", "websocket"],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+            });
+        }
 
         socketRef.current.on("connect", () => console.log("Socket connected"));
         socketRef.current.on("connect_error", (err: Error) => console.error("Socket error:", err.message));

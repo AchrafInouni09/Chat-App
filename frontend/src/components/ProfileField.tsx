@@ -42,7 +42,7 @@ const ProfileField = ({
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [pageLoading, setPageLoading] = useState(true);
-    //test data li khasani 
+
     useEffect(() => {
         const fetchData = async () => {
             setPageLoading(true);
@@ -56,7 +56,8 @@ const ProfileField = ({
                 setLastName(userData.user.last_name || '');
                 setUsername(userData.user.username || '');
                 setBio(userData.user.bio || '');
-                setAvatar(userData.user.avatar_url || null);
+                setAvatar(`/api/${userData.user.avatar_url}` || null);
+
             }
         };
         fetchData();
