@@ -59,13 +59,13 @@ const AuthForm = () => {
                     formData.append('avatar', avatarFile);
                 }
 
-                response = await fetch("http://localhost:3000/api/auth/register", {
+                response = await fetch("/api/auth/register", {
                     method: "POST",
                     body: formData,
                 });
             }
             else {
-                response = await fetch("http://localhost:3000/api/auth/login", {
+                response = await fetch("/api/auth/login", {
                     method: "POST",
                     body: JSON.stringify({
                         username: data.username,

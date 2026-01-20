@@ -92,7 +92,7 @@ export async function get_ProfileData() {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/api/Profile/me', {
+    const response = await fetch('/api/Profile/me', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

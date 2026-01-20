@@ -56,7 +56,7 @@ const AddFriendPage = () => {
 
     const fetchPendingRequests = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/pending`, {
+            const res = await fetch(`/api/friends/pending`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -68,7 +68,7 @@ const AddFriendPage = () => {
 
     const fetchSentRequests = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/sent`, {
+            const res = await fetch(`/api/friends/sent`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -80,7 +80,7 @@ const AddFriendPage = () => {
 
     const searchUsers = async (term: string) => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/search?q=${encodeURIComponent(term)}`, {
+            const res = await fetch(`/api/friends/search?q=${encodeURIComponent(term)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -93,7 +93,7 @@ const AddFriendPage = () => {
 
     const handleAddFriend = async (username: string) => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/request`, {
+            const res = await fetch(`/api/friends/request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const AddFriendPage = () => {
 
     const handleAcceptRequest = async (username: string) => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/accept`, {
+            const res = await fetch(`/api/friends/accept`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ const AddFriendPage = () => {
 
     const handleRejectRequest = async (username: string) => {
         try {
-            const res = await fetch(`${API_URL}/api/friends/reject`, {
+            const res = await fetch(`/api/friends/reject`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

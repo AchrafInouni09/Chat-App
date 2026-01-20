@@ -59,7 +59,7 @@ const PostsPage = () => {
     const [editContent, setEditContent] = useState('');
 
     const token = Cookies.get('token');
-    const API_URL = 'http://localhost:3000';
+    const API_URL = '';
 
     let currentUserId: number | null = null;
     let currentUsername: string | null = null;

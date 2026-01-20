@@ -93,21 +93,21 @@ server {
 
     # Frontend
     location / {
-        proxy_pass http://frontend:5173;
+        proxy_pass http://chatapp-frontend:5173/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     # API
     location /api/ {
-        proxy_pass http://backend:3000/;
+        proxy_pass http://chatapp-backend:3000/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     # Socket.IO
     location /socket.io/ {
-        proxy_pass http://backend:3000;
+        proxy_pass http://chatapp-backend:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";

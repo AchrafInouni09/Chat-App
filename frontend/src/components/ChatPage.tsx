@@ -82,7 +82,7 @@ const ChatPage = () => {
         initChat();
 
         // Socket Setup
-        socketRef.current = io("http://localhost:3000", {
+        socketRef.current = io("/", {
             auth: { token },
             transports: ["websocket"]
         });
@@ -103,7 +103,7 @@ const ChatPage = () => {
             if (activeConvId && msg.conversation_id === activeConvId) {
                 const formattedMsg = {
                     ...msg,
-                    avatar_url: msg.avatar_url ? `http://localhost:3000/${msg.avatar_url}` : null,
+                    avatar_url: msg.avatar_url ? `/${msg.avatar_url}` : null,
                     isOwn: msg.sender_username === currentUsername
                 };
                 setMessages(prev => [...prev, formattedMsg]);
@@ -125,14 +125,14 @@ const ChatPage = () => {
         // Join socket room
         socketRef.current?.emit("conversation:join", { conversationId: activeConvId });
 
-        fetch(`http://localhost:3000/api/chat/conversations/${activeConvId}/messages`, {
+        fetch(`/api/chat/conversations/${activeConvId}/messages`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => res.json())
             .then(data => {
                 const messagesWithAvatar = (data.messages || []).map((msg: any) => ({
                     ...msg,
-                    avatar_url: msg.avatar_url ? `http://localhost:3000/${msg.avatar_url}` : null,
+                    avatar_url: msg.avatar_url ? `/${msg.avatar_url}` : null,
                     isOwn: msg.sender_username === currentUsername
                 }));
                 setMessages(messagesWithAvatar);
@@ -148,7 +148,7 @@ const ChatPage = () => {
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
     const fetchConversations = async () => {
-        const res = await fetch('http://localhost:3000/api/chat/conversations', {
+        const res = await fetch('/api/chat/conversations', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -158,7 +158,7 @@ const ChatPage = () => {
     };
 
     const fetchPublicRooms = async () => {
-        const res = await fetch('http://localhost:3000/api/chat/groups', {
+        const res = await fetch('/api/chat/groups', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -168,7 +168,7 @@ const ChatPage = () => {
     const createRoom = async () => {
         if (!newRoomName) return;
         try {
-            const res = await fetch('http://localhost:3000/api/chat/groups', {
+            const res = await fetch('/api/chat/groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ name: newRoomName })
@@ -188,7 +188,7 @@ const ChatPage = () => {
 
     const joinRoom = async (roomId: number) => {
         try {
-            await fetch(`http://localhost:3000/api/chat/groups/${roomId}/join`, {
+            await fetch(`/api/chat/groups/${roomId}/join`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -204,7 +204,7 @@ const ChatPage = () => {
         if (!newDmUsername.trim()) return;
         setDmError("");
         try {
-            const res = await fetch('http://localhost:3000/api/chat/conversation/direct', {
+            const res = await fetch('/api/chat/conversation/direct', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

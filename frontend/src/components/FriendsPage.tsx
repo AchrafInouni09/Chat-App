@@ -22,7 +22,7 @@ const FriendsPage = () => {
     const [startingChat, setStartingChat] = useState<number | null>(null);
 
     const token = Cookies.get('token');
-    const API_URL = 'http://localhost:3000';
+    const API_URL = '';
 
     useEffect(() => {
         fetchFriends();

@@ -22,8 +22,8 @@ const app = express ();
 app.set('trust proxy', true);
 
 
-app.use (cors({
-    origin:'http://localhost:5173',
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://localhost'],
     credentials: true
 }));
 
@@ -52,8 +52,8 @@ app.get ('/', (req, res) => {
 
 
 const server  = http.createServer(app);
-const io = new Server (server, {
-    cors: {origin : "http://localhost:5173", credentials: true}
+const io = new Server(server, {
+    cors: { origin: ["http://localhost:5173", "https://localhost"], credentials: true }
 });
 
 setupSocket (io);

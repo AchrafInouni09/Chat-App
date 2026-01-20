@@ -36,7 +36,7 @@ const ApiKeysPage = () => {
     const [activeTab, setActiveTab] = useState<'keys' | 'docs'>('keys');
 
     const token = Cookies.get('token');
-    const API_URL = 'http://localhost:3000';
+    const API_URL = '';
 
     useEffect(() => {
         if (!token) {

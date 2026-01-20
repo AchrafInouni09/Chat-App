@@ -35,7 +35,7 @@ const AdminDashboard = () => {
         const featchData = async () => {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:3000/api/users', {
+                const response = await fetch('/api/users', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
         if (window.confirm('ARE YOU SURE YOU WANT TO DELETE THIS USER?')) {
             const deleteData = async () => {
                 try {
-                    const response = await fetch('http://localhost:3000/api/users/' + id, {
+                    const response = await fetch('/api/users/' + id, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ const AdminDashboard = () => {
 
     const handleUpdateUser = async (updatedUser: User) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/users/${updatedUser.id}`, {
+            const response = await fetch(`/api/users/${updatedUser.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
             return;
         }
         try {
-            const response = await fetch('http://localhost:3000/api/users', {
+            const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
