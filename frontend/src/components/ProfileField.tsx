@@ -43,25 +43,24 @@ const ProfileField = ({
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [pageLoading, setPageLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setPageLoading(true);
-            const userData = await get_ProfileData();
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setPageLoading(false);
-            console.log("Fetched user data:", userData);
-            if (userData) {
-                // console.log(userData);
-                setFirstName(userData.user.first_name || '');
-                setLastName(userData.user.last_name || '');
-                setUsername(userData.user.username || '');
-                setBio(userData.user.bio || '');
-                setAvatar(`/api/${userData.user.avatar_url}` || null);
+useEffect(() => {
+  const fetchData = async () => {
+    setPageLoading(true);
+    const userData = await get_ProfileData();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setPageLoading(false);
 
-            }
-        };
-        fetchData();
-    }, []);
+    if (userData) {
+      setFirstName(userData.user.first_name || "");
+      setLastName(userData.user.last_name || "");
+      setUsername(userData.user.username || "");
+      setBio(userData.user.bio || "");
+      setAvatar(userData.user.avatar_url ?? null);
+    }
+  };
+  fetchData();
+}, []);
+
 
 
     const fileInputRef = useRef<HTMLInputElement>(null);

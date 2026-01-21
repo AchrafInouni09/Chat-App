@@ -39,58 +39,66 @@ const AuthForm = () => {
     };
 
     const onSubmit = async (data: RegistrationData) => {
-        if (isSubmitting) return;
-        setIsSubmitting(true);
-        setError(null);
+  if (isSubmitting) return;
+  setIsSubmitting(true);
+  setError(null);
 
-        try {
-            let response;
+  try {
+    let response: Response;
 
-            if (!isLogin) {
-                const formData = new FormData();
-                formData.append('firstname', data.firstname || '');
-                formData.append('lastname', data.lastname || '');
-                formData.append('username', data.username);
-                formData.append('email', data.email || '');
-                formData.append('password', data.password);
-                formData.append('role', 'user');
+    if (!isLogin) {
+      // Registration
+      const formData = new FormData();
+      formData.append('firstname', data.firstname || '');
+      formData.append('lastname', data.lastname || '');
+      formData.append('username', data.username);
+      formData.append('email', data.email || '');
+      formData.append('password', data.password);
+      formData.append('role', 'user');
 
-                if (avatarFile) {
-                    formData.append('avatar', avatarFile);
-                }
+      if (avatarFile) formData.append('avatar', avatarFile);
 
-                response = await fetch("/api/auth/register", {
-                    method: "POST",
-                    body: formData,
-                });
-            }
-            else {
-                response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        username: data.username,
-                        password: data.password,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-            }
-
-            if (!response || !response.ok) {
-                console.log("error");
-                const errData = await response?.json().catch(() => ({}));
-                setError(errData?.message || "User not found");
-                return;
-            }
-            const res = await response.json();
-            Cookies.set("token", res.token);
-            Cookies.set("username", data.username);
-            navigate("/profile");
-        } finally {
-            setIsSubmitting(false);
-        }
+      response = await fetch("/api/auth/register", {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      // Login
+      response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: data.username, password: data.password }),
+      });
     }
+
+    // Handle failed response
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      // Customize error message for login vs register
+      const msg = isLogin
+        ? errData.message || "Invalid username or password"
+        : errData.message || "Registration failed";
+      setError(msg);
+      return;
+    }
+
+    // Successful login or registration
+    const resData = await response.json();
+    if (resData.token) {
+      Cookies.set("token", resData.token, { expires: 7 });
+    }
+    if (resData.user?.username) {
+      Cookies.set("username", resData.user.username);
+    }
+    navigate("/profile");
+  } catch (err) {
+    console.error("Submission error:", err);
+    setError("Network error occurred");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
     return (
         <div className="bg-grunge-white border-2 border-grunge-dark p-8 flex flex-col gap-6 shadow-[8px_8px_0_#0f0f10] relative z-10 w-full">

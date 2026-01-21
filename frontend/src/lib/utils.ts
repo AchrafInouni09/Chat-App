@@ -16,7 +16,7 @@ export async function delete_Profile() {
   }
 
   try {
-    const response = await fetch('/api/Profile/me', {
+    const response = await fetch('/api/profile/me', {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -60,7 +60,7 @@ export async function update_ProfileData(profileData: {
       formData.append('avatar', profileData.avatar);
     }
 
-    const response = await fetch('/api/Profile/me', {
+    const response = await fetch('/api/profile/me', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -84,29 +84,23 @@ export async function update_ProfileData(profileData: {
 
 
 export async function get_ProfileData() {
-
   const token = Cookies.get('token');
-  if (!token) {
-    return null; // or throw error
-  }
+  if (!token) return null;
 
   try {
-    const response = await fetch('/api/Profile/me', {
+    const response = await fetch('/api/profile/me', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (!response.ok) {
-      console.error("Failed to fetch profile");
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    // data.user.avatar_url = `/api/${data.user.avatar_url}`;
-    console.log(data.user.avatar_url);
 
+    // ✅ Correctly build full path for frontend
+    if (data.user.avatar_url) {
+      data.user.avatar_url = `/images/${data.user.avatar_url}`;
+    }
 
     return data;
   } catch (error) {
@@ -114,6 +108,8 @@ export async function get_ProfileData() {
     return null;
   }
 }
+
+
 // token functions
 export function isJwtValid(token: string) {
   try {

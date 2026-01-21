@@ -19,14 +19,12 @@ mkdir -p $CERT_DIR
 # -------------------------------------------------
 # Generate SSL cert if missing
 # -------------------------------------------------
-if [ ! -f "$CERT_DIR/localhost.crt" ]; then
+if [ ! -f "$CERT_DIR/localhost+2.pem" ]; then
   echo "🔐 Generating self-signed SSL certificate..."
 
-  openssl req -x509 -nodes -days 365 \
-    -newkey rsa:2048 \
-    -keyout $CERT_DIR/localhost.key \
-    -out $CERT_DIR/localhost.crt \
-    -subj "/C=MA/ST=Local/L=Local/O=ChatApp/OU=Dev/CN=localhost"
+  cd $CERT_DIR
+  mkcert -key-file localhost-key.pem -cert-file localhost.pem localhost 127.0.0.1 ::1
+  cd ..
 
   echo "✅ SSL certificate generated"
 else

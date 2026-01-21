@@ -1,6 +1,6 @@
 const express = require ("express");
 const router = express.Router ();
-const upload = require('../config/Upload');
+const upload = require('../config/Upload.js');
 
 const {
   get_my_profile_mw,
