@@ -43,23 +43,23 @@ const ProfileField = ({
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [pageLoading, setPageLoading] = useState(true);
 
-useEffect(() => {
-  const fetchData = async () => {
-    setPageLoading(true);
-    const userData = await get_ProfileData();
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setPageLoading(false);
+    useEffect(() => {
+        const fetchData = async () => {
+            setPageLoading(true);
+            const userData = await get_ProfileData();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            setPageLoading(false);
 
-    if (userData) {
-      setFirstName(userData.user.first_name || "");
-      setLastName(userData.user.last_name || "");
-      setUsername(userData.user.username || "");
-      setBio(userData.user.bio || "");
-      setAvatar(userData.user.avatar_url ?? null);
-    }
-  };
-  fetchData();
-}, []);
+            if (userData) {
+                setFirstName(userData.user.first_name || "");
+                setLastName(userData.user.last_name || "");
+                setUsername(userData.user.username || "");
+                setBio(userData.user.bio || "");
+                setAvatar(userData.user.avatar_url ?? null);
+            }
+        };
+        fetchData();
+    }, []);
 
 
 
@@ -97,6 +97,12 @@ useEffect(() => {
         if (result.success) {
             setSuccessMessage('Profile updated successfully!');
             setAvatarFile(null);
+
+            // Update avatar state with the new URL from server response
+            if (result.data?.user?.avatar_url) {
+                setAvatar(`/images/${result.data.user.avatar_url}`);
+            }
+
             if (onSave) {
                 onSave({ avatar, firstName, lastName, username, bio });
             }
