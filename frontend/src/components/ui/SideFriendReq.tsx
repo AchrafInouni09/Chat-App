@@ -5,6 +5,7 @@ interface SideFriendReqProps {
     name: string;
     message: string;
     avatarFallback: string;
+    avatarSrc?: string;
     statusColor?: string;
     isActive?: boolean;
 }
@@ -13,6 +14,7 @@ const SideFriendReq: React.FC<SideFriendReqProps> = ({
     name,
     message,
     avatarFallback,
+    avatarSrc,
     statusColor = "bg-grunge-green",
     isActive = false,
 }) => {
@@ -32,7 +34,7 @@ const SideFriendReq: React.FC<SideFriendReqProps> = ({
         <div className={`p-3 border-2 cursor-pointer transition-all flex items-center gap-3 ${containerClasses}`}>
             <div className="relative">
                 <Avatar
-                    src={undefined}
+                    src={avatarSrc}
                     alt={name}
                     fallback={avatarFallback}
                     size="sm"

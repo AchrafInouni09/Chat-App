@@ -123,6 +123,6 @@ export function isJwtValid(token: string) {
 }
 
 export function checkRole(token: string, role: string[]) {
-  const decodedToken = jwtDecode(token);
+  const decodedToken = jwtDecode(token) as any;
   return role.includes(decodedToken.role);
 }

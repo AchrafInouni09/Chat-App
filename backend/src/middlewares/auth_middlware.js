@@ -62,7 +62,7 @@ async function auth_mw_register (req, res, next)
 
     if (req.file)
     {
-        avatar_url = `images/${req.file.filename}`;
+        avatar_url = req.file.filename;
     }
 
     const {firstname, lastname, username, email, password, role} = req.body;

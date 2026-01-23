@@ -72,12 +72,22 @@ class Conversations
                     WHERE cp2.conversation_id = c.id AND cp2.user_id != ? 
                     LIMIT 1
                 )
-            END as name
+            END as name,
+            CASE 
+                WHEN c.type = 'direct' THEN (
+                    SELECT u.avatar_url 
+                    FROM conversation_participants cp2 
+                    JOIN users u ON u.id = cp2.user_id 
+                    WHERE cp2.conversation_id = c.id AND cp2.user_id != ? 
+                    LIMIT 1
+                )
+                ELSE NULL
+            END as avatar_url
             FROM conversations c
             JOIN conversation_participants cp ON cp.conversation_id = c.id
             WHERE cp.user_id = ?
             ORDER BY c.created_at DESC`;
-        return await this.Db.select (query, [userId, userId]);
+        return await this.Db.select (query, [userId, userId, userId]);
     }
 
 

@@ -21,6 +21,7 @@ interface Conversation {
     id: number;
     name: string;
     type: 'direct' | 'group';
+    avatar_url?: string;
 }
 
 interface Message {
@@ -300,7 +301,8 @@ const ChatPage = () => {
                                         <SideFriendReq
                                             name={conv.name || "Unknown"}
                                             message={conv.type === 'group' ? '🌐 Public Room' : '👤 Direct Message'}
-                                            avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}//ila 9dty trj3 avatar
+                                            avatarFallback={conv.name?.[0]?.toUpperCase() || "?"}
+                                            avatarSrc={conv.avatar_url ? `/images/${conv.avatar_url}` : undefined}
                                             statusColor={activeConvId === conv.id ? "bg-grunge-accent" : "bg-grunge-green"}
                                             isActive={activeConvId === conv.id}
                                         />
@@ -345,7 +347,7 @@ const ChatPage = () => {
                     <div className="p-4 border-b-2 border-grunge-dark flex justify-between items-center bg-grunge-white z-10">
                         <div className="flex items-center gap-3">
                             <Avatar
-                                src={undefined}
+                                src={activeConversation?.avatar_url ? `/images/${activeConversation.avatar_url}` : undefined}
                                 alt={activeConversation?.name || "Select Chat"}
                                 fallback={activeConversation?.name?.[0] || "#"}
                                 size="sm"

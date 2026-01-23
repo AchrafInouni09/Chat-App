@@ -1,5 +1,6 @@
 
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./components/HomePage.tsx";
 import ChatPage from "./components/ChatPage.tsx";
@@ -29,6 +30,14 @@ function ProtectedRoute({ children, role }: { children: ReactNode, role?: string
 }
 
 function App() {
+  // Clean up invalid tokens on app load
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token && !isJwtValid(token)) {
+      Cookies.remove('token');
+      Cookies.remove('username');
+    }
+  }, []);
 
   return (
     <Routes>

@@ -11,6 +11,7 @@ const cors = require('cors');
 const path = require('path');
 const PostsRoutes = require('./src/routes/PostsRoutes');
 const UsersRoutes = require('./src/routes/UsersRoutes');
+const indexRoutes = require('./src/routes/index');
 
 const { auth_mw_token, Priority_login_mw } = require('./src/middlewares/auth_middlware');
 const { setupSocket } = require('./src/sockets/socketSetup');
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/images', express.static(path.join(process.cwd(), 'data/images')));
 
+app.use('/api', indexRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', PostsRoutes);
 

@@ -150,7 +150,7 @@ const FriendsPage = () => {
                                 {/* Friend Info */}
                                 <div className="flex items-center gap-4 mb-4">
                                     <Avatar
-                                        src={friend.avatar_url ? `${API_URL}/${friend.avatar_url}` : undefined}
+                                        src={friend.avatar_url ? `/images/${friend.avatar_url}` : undefined}
                                         alt={friend.username}
                                         fallback={friend.username.substring(0, 2).toUpperCase()}
                                         size="lg"
