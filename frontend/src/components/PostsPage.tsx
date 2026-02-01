@@ -368,7 +368,8 @@ const PostsPage = () => {
     const getAvatarUrl = (url: string | null) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
-        return `${API_URL}/${url}`;
+        if (url.startsWith('/images/')) return url;
+        return `/images/${url}`;
     };
 
     return (

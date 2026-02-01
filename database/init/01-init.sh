@@ -3,6 +3,13 @@ set -e
 
 echo "Initializing Database Schema..."
 
+# Grant privileges to the chat user
+mysql -u root -p"$MYSQL_ROOT_PASSWORD" <<-EOSQL
+-- Grant all privileges to chat user on the database
+GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+FLUSH PRIVILEGES;
+EOSQL
+
 mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" <<-EOSQL
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (

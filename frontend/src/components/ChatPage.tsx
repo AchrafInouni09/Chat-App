@@ -110,7 +110,7 @@ const ChatPage = () => {
             if (activeConvId && msg.conversation_id === activeConvId) {
                 const formattedMsg = {
                     ...msg,
-                    avatar_url: msg.avatar_url ? `/${msg.avatar_url}` : null,
+                    avatar_url: msg.avatar_url ? `/images/${msg.avatar_url}` : null,
                     isOwn: msg.sender_username === currentUsername
                 };
                 setMessages(prev => [...prev, formattedMsg]);
@@ -139,7 +139,7 @@ const ChatPage = () => {
             .then(data => {
                 const messagesWithAvatar = (data.messages || []).map((msg: any) => ({
                     ...msg,
-                    avatar_url: msg.avatar_url ? `/${msg.avatar_url}` : null,
+                    avatar_url: msg.avatar_url ? `/images/${msg.avatar_url}` : null,
                     isOwn: msg.sender_username === currentUsername
                 }));
                 setMessages(messagesWithAvatar);
