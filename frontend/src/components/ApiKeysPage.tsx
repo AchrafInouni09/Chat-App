@@ -36,7 +36,6 @@ const ApiKeysPage = () => {
     const [activeTab, setActiveTab] = useState<'keys' | 'docs'>('keys');
 
     const token = Cookies.get('token');
-    const API_URL = '';
 
     useEffect(() => {
         if (!token) {
@@ -58,7 +57,7 @@ const ApiKeysPage = () => {
 
     const fetchApiKeys = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/keys`, {
+            const res = await fetch(`/api/keys`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -79,7 +78,7 @@ const ApiKeysPage = () => {
         setCreating(true);
         setError(null);
         try {
-            const res = await fetch(`${API_URL}/api/keys`, {
+            const res = await fetch(`/api/keys`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,7 +112,7 @@ const ApiKeysPage = () => {
         if (!window.confirm('Are you sure you want to delete this API key? This action cannot be undone.')) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/keys/${keyId}`, {
+            const res = await fetch(`/api/keys/${keyId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

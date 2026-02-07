@@ -1,4 +1,3 @@
-# FIX: Auth Service Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app

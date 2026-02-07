@@ -3,9 +3,6 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const axios = require('axios');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const promClient = require('prom-client');
 require('dotenv').config();
 
@@ -18,22 +15,6 @@ promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_p
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/images', express.static('uploads'));
-
-// File upload configuration (though not used in schema, keep for compatibility)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = './uploads/';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'mysql',
@@ -65,9 +46,19 @@ async function authMiddleware(req, res, next) {
         }
     }
 
-    // TODO: API Key validation (not implementing full API key system here)
     if (apiKey) {
-        return res.status(401).json({ message: 'API Key validation not implemented' });
+        try {
+            const crypto = require('crypto');
+            const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+            const [rows] = await pool.query('SELECT user_id FROM api_keys WHERE key_hash = ?', [keyHash]);
+            if (rows.length > 0) {
+                req.user = { id: rows[0].user_id };
+                return next();
+            }
+        } catch (err) {
+            console.error('API key validation error:', err);
+        }
+        return res.status(401).json({ message: 'Invalid API key' });
     }
 
     return res.status(401).json({ 

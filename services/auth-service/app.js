@@ -81,10 +81,6 @@ app.post('/login', async (req, res) => {
 
 // Register endpoint with avatar support
 app.post('/register', upload.single('avatar'), async (req, res) => {
-    console.log('Register request received');
-    console.log('req.body:', req.body);
-    console.log('req.file:', req.file);
-    
     // Support both field name formats
     const firstname = req.body.firstname || req.body.first_name;
     const lastname = req.body.lastname || req.body.last_name;
@@ -135,8 +131,15 @@ app.post('/register', upload.single('avatar'), async (req, res) => {
             [result.insertId]
         );
 
+        const token = jwt.sign(
+            { id: newUsers[0].id, username: newUsers[0].username, role: newUsers[0].role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
         res.json({ 
             message: 'registerd success',
+            token,
             user: newUsers[0]
         });
     } catch (err) {

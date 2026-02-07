@@ -35,7 +35,6 @@ const AddFriendPage = () => {
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
     const token = Cookies.get('token');
-    const API_URL = '';
 
     useEffect(() => {
         fetchPendingRequests();

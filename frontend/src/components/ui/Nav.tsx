@@ -10,15 +10,19 @@ import { get_ProfileData, isJwtValid } from '../../lib/utils';
 function Nav() {
   const navigate = useNavigate();
   const rawToken = Cookies.get("token");
-  const accessToken = rawToken && isJwtValid(rawToken) ? rawToken : null;
+  const [accessToken, setAccessToken] = useState<string | null>(
+    rawToken && isJwtValid(rawToken) ? rawToken : null
+  );
 
-  // Clean up invalid/expired tokens
+  // Clean up invalid/expired tokens on mount
   useEffect(() => {
     if (rawToken && !isJwtValid(rawToken)) {
       Cookies.remove('token');
       Cookies.remove('username');
+      setAccessToken(null);
     }
   }, [rawToken]);
+
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("ME");
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -31,6 +35,11 @@ function Nav() {
           setUserAvatar(userData.user.avatar_url || null);
           setUserInitial(userData.user.username?.[0]?.toUpperCase() || "ME");
           setUserRole(userData.user.role || null);
+        } else {
+          // Server rejected token — clear auth state
+          Cookies.remove('token');
+          Cookies.remove('username');
+          setAccessToken(null);
         }
       }
     };

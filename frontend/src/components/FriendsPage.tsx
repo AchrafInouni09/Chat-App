@@ -22,7 +22,6 @@ const FriendsPage = () => {
     const [startingChat, setStartingChat] = useState<number | null>(null);
 
     const token = Cookies.get('token');
-    const API_URL = '';
 
     useEffect(() => {
         fetchFriends();
@@ -31,7 +30,7 @@ const FriendsPage = () => {
     const fetchFriends = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_URL}/api/friends/list`, {
+            const res = await fetch(`/api/friends/list`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -47,7 +46,7 @@ const FriendsPage = () => {
     const startConversation = async (username: string, friendId: number) => {
         setStartingChat(friendId);
         try {
-            const res = await fetch(`${API_URL}/api/chat/conversation/direct`, {
+            const res = await fetch(`/api/chat/conversation/direct`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,7 +71,7 @@ const FriendsPage = () => {
         if (!window.confirm(`Remove ${username} from friends?`)) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/friends/remove`, {
+            const res = await fetch(`/api/friends/remove`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

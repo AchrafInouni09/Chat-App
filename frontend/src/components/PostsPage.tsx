@@ -59,7 +59,6 @@ const PostsPage = () => {
     const [editContent, setEditContent] = useState('');
 
     const token = Cookies.get('token');
-    const API_URL = '';
 
     let currentUserId: number | null = null;
     let currentUsername: string | null = null;
@@ -77,7 +76,7 @@ const PostsPage = () => {
 
     useEffect(() => {
         if (token) {
-            fetch(`${API_URL}/api/profile/me`, {
+            fetch(`/api/profile/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             .then(res => res.ok ? res.json() : null)
@@ -107,7 +106,7 @@ const PostsPage = () => {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/posts`);
+            const res = await fetch(`/api/posts`);
             const data = await res.json();
             setPosts(data.posts || []);
         } catch (err) {
@@ -126,7 +125,7 @@ const PostsPage = () => {
         }
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/posts/my`, {
+            const res = await fetch(`/api/posts/my`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -151,7 +150,7 @@ const PostsPage = () => {
         setCreating(true);
         setError(null);
         try {
-            const res = await fetch(`${API_URL}/api/posts`, {
+            const res = await fetch(`/api/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +188,7 @@ const PostsPage = () => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}`, {
+            const res = await fetch(`/api/posts/${postId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -211,7 +210,7 @@ const PostsPage = () => {
         if (!token || !editContent.trim()) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}`, {
+            const res = await fetch(`/api/posts/${postId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -246,7 +245,7 @@ const PostsPage = () => {
         }
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}/like`, {
+            const res = await fetch(`/api/posts/${postId}/like`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -267,7 +266,7 @@ const PostsPage = () => {
         if (!token) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}/like`, {
+            const res = await fetch(`/api/posts/${postId}/like`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -299,7 +298,7 @@ const PostsPage = () => {
     const fetchComments = async (postId: number) => {
         setLoadingComments(postId);
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}/comments`);
+            const res = await fetch(`/api/posts/${postId}/comments`);
             const data = await res.json();
             setComments(prev => ({ ...prev, [postId]: data.comments || [] }));
         } catch (err) {
@@ -319,7 +318,7 @@ const PostsPage = () => {
         if (!content) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/${postId}/comments`, {
+            const res = await fetch(`/api/posts/${postId}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -346,7 +345,7 @@ const PostsPage = () => {
         if (!token) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/posts/comments/${commentId}`, {
+            const res = await fetch(`/api/posts/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
