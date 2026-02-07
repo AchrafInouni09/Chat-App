@@ -3,6 +3,9 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -10,6 +13,23 @@ const PORT = process.env.AUTH_PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+// Serve uploaded avatars
+app.use('/images', express.static('uploads'));
+
+// File upload configuration for avatar
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = './uploads/';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage });
 
 // Database connection pool
 const pool = mysql.createPool({
@@ -32,7 +52,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const [rows] = await pool.query(
-            'SELECT id, username, role FROM users WHERE username = ? AND password = ?',
+            'SELECT id, username, role FROM users WHERE username = ? AND password_hash = ?',
             [username, password]
         );
 
@@ -54,9 +74,16 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Register endpoint
-app.post('/register', async (req, res) => {
-    const { firstname, lastname, username, email, password, role } = req.body;
+// Register endpoint with avatar support
+app.post('/register', upload.single('avatar'), async (req, res) => {
+    console.log('Register request received');
+    console.log('req.body:', req.body);
+    console.log('req.file:', req.file);
+    
+    // Support both field name formats
+    const firstname = req.body.firstname || req.body.first_name;
+    const lastname = req.body.lastname || req.body.last_name;
+    const { username, email, password, role } = req.body || {};
 
     if (!firstname || !lastname || !username || !email || !password || !role) {
         return res.status(400).json({ 
@@ -66,7 +93,7 @@ app.post('/register', async (req, res) => {
 
     const roles = ['user', 'admin', 'moderator', 'guest'];
     if (!roles.includes(role)) {
-        return res.status(400).json({ message: 'Invalid role' });
+        return res.status(400).json({ message: 'Invalid role specified' });
     }
 
     try {
@@ -82,13 +109,31 @@ app.post('/register', async (req, res) => {
             return res.status(409).json({ message: 'Username already in use' });
         }
 
-        // Insert new user
-        await pool.query(
-            'INSERT INTO users (firstname, lastname, username, email, password, role) VALUES (?, ?, ?, ?, ?, ?)',
-            [firstname, lastname, username, email, password, role]
+        // Check if first name and last name combination exists
+        const [nameCheck] = await pool.query('SELECT id FROM users WHERE first_name = ? AND last_name = ?', [firstname, lastname]);
+        if (nameCheck.length > 0) {
+            return res.status(409).json({ message: 'User with the same first name and last name already exists' });
+        }
+
+        // Handle avatar - store filename only (like original backend)
+        const avatarUrl = req.file ? req.file.filename : null;
+
+        // Insert new user with avatar
+        const [result] = await pool.query(
+            'INSERT INTO users (first_name, last_name, username, email, password_hash, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [firstname, lastname, username, email, password, role, avatarUrl]
         );
 
-        res.json({ message: 'registered success' });
+        // Fetch and return the created user
+        const [newUsers] = await pool.query(
+            'SELECT id, username, email, first_name, last_name, role, avatar_url, created_at FROM users WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.json({ 
+            message: 'registerd success',
+            user: newUsers[0]
+        });
     } catch (err) {
         console.error('Register error:', err);
         res.status(500).json({ message: 'Internal Server Error' });

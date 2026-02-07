@@ -1,10 +1,11 @@
-// FIX: Post Microservice - Single responsibility: Posts and content management
+// Post Microservice - Posts, likes, comments management (Matching working backend)
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const axios = require('axios');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -12,10 +13,18 @@ const PORT = process.env.POST_PORT || 3004;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/images', express.static('uploads'));
 
+// File upload configuration (though not used in schema, keep for compatibility)
 const storage = multer.diskStorage({
-    destination: './uploads/',
+    destination: (req, file, cb) => {
+        const uploadDir = './uploads/';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
@@ -28,83 +37,179 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'chat_app',
     waitForConnections: true,
-    connectionLimit: 10
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-async function verifyToken(req, res, next) {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+// Middleware to verify token (JWT or API Key)
+async function authMiddleware(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const apiKey = req.headers['x-api-key'];
+
+    // Try JWT first
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+            const response = await axios.post(`http://auth-service:3001/verify`, { token });
+            req.user = response.data.user;
+            return next();
+        } catch (err) {
+            if (!apiKey) {
+                return res.status(401).json({ message: 'Invalid or expired token' });
+            }
+            // Fall through to API key check
+        }
     }
 
-    try {
-        const response = await axios.post(`http://auth-service:3001/verify`, { token });
-        req.user = response.data.user;
-        next();
-    } catch (err) {
-        return res.status(401).json({ message: 'Invalid token' });
+    // TODO: API Key validation (not implementing full API key system here)
+    if (apiKey) {
+        return res.status(401).json({ message: 'API Key validation not implemented' });
     }
+
+    return res.status(401).json({ 
+        message: 'Authentication required. Provide Bearer token or X-API-Key header.' 
+    });
 }
 
-// Create post
-app.post('/posts', verifyToken, upload.single('image'), async (req, res) => {
-    const { content } = req.body;
-    const image = req.file ? req.file.filename : null;
-
+// GET /posts - Get all public posts (NO AUTH REQUIRED)
+app.get('/posts', async (req, res) => {
     try {
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const query = `
+            SELECT p.*, u.username, u.avatar_url,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.visibility = 'public'
+            ORDER BY p.created_at DESC
+            LIMIT ? OFFSET ?`;
+        
+        const [posts] = await pool.query(query, [limit, offset]);
+        res.json({ posts });
+    } catch (err) {
+        console.error('Get all posts error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// GET /posts/my - Get my posts (AUTH REQUIRED)
+app.get('/posts/my', authMiddleware, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 20;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const query = `
+            SELECT p.*, u.username, u.avatar_url,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = ?
+            ORDER BY p.created_at DESC
+            LIMIT ? OFFSET ?`;
+        
+        const [posts] = await pool.query(query, [req.user.id, limit, offset]);
+        res.json({ posts });
+    } catch (err) {
+        console.error('Get my posts error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// GET /posts/:id - Get single post (AUTH REQUIRED)
+app.get('/posts/:id', authMiddleware, async (req, res) => {
+    try {
+        const query = `
+            SELECT p.*, u.username, u.avatar_url,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+            FROM posts p 
+            JOIN users u ON p.user_id = u.id 
+            WHERE p.id = ?`;
+        
+        const [rows] = await pool.query(query, [req.params.id]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        res.json({ post: rows[0] });
+    } catch (err) {
+        console.error('Get post error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// POST /posts - Create post (AUTH REQUIRED)
+app.post('/posts', authMiddleware, async (req, res) => {
+    try {
+        const { content, visibility = 'public' } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required' });
+        }
+
         const [result] = await pool.query(
-            'INSERT INTO posts (user_id, content, image) VALUES (?, ?, ?)',
-            [req.user.id, content, image]
+            'INSERT INTO posts (user_id, content, visibility) VALUES (?, ?, ?)',
+            [req.user.id, content, visibility]
         );
-        res.json({ message: 'Post created', postId: result.insertId });
+
+        // Return the created post
+        const [rows] = await pool.query(`
+            SELECT p.*, u.username, u.avatar_url,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count
+            FROM posts p 
+            JOIN users u ON p.user_id = u.id 
+            WHERE p.id = ?`, [result.insertId]);
+
+        res.json({ message: 'Post created', post: rows[0] });
     } catch (err) {
         console.error('Create post error:', err);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
-// Get all posts
-app.get('/posts', async (req, res) => {
+// PUT /posts/:id - Update post (AUTH REQUIRED, owner only)
+app.put('/posts/:id', authMiddleware, async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT p.*, u.username, u.avatar FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC'
+        const { content } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required' });
+        }
+
+        const [result] = await pool.query(
+            'UPDATE posts SET content = ? WHERE id = ? AND user_id = ?',
+            [content, req.params.id, req.user.id]
         );
-        res.json(rows);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Post not found or not authorized' });
+        }
+
+        res.json({ message: 'Post updated' });
     } catch (err) {
-        console.error('Get posts error:', err);
+        console.error('Update post error:', err);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
-// Get user posts
-app.get('/posts/user/:userId', async (req, res) => {
+// DELETE /posts/:id - Delete post (AUTH REQUIRED, owner only)
+app.delete('/posts/:id', authMiddleware, async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC',
-            [req.params.userId]
+        const [result] = await pool.query(
+            'DELETE FROM posts WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
         );
-        res.json(rows);
-    } catch (err) {
-        console.error('Get user posts error:', err);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
 
-// Delete post
-app.delete('/posts/:id', verifyToken, async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT user_id FROM posts WHERE id = ?', [req.params.id]);
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Post not found' });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Post not found or not authorized' });
         }
 
-        if (rows[0].user_id !== req.user.id) {
-            return res.status(403).json({ message: 'Forbidden' });
-        }
-
-        await pool.query('DELETE FROM posts WHERE id = ?', [req.params.id]);
         res.json({ message: 'Post deleted' });
     } catch (err) {
         console.error('Delete post error:', err);
@@ -112,6 +217,106 @@ app.delete('/posts/:id', verifyToken, async (req, res) => {
     }
 });
 
+// POST /posts/:id/like - Like a post (AUTH REQUIRED)
+app.post('/posts/:id/like', authMiddleware, async (req, res) => {
+    try {
+        await pool.query(
+            'INSERT INTO post_likes (post_id, user_id) VALUES (?, ?)',
+            [req.params.id, req.user.id]
+        );
+
+        res.json({ message: 'Post liked' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ message: 'Already liked' });
+        }
+        console.error('Like post error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// DELETE /posts/:id/like - Unlike a post (AUTH REQUIRED)
+app.delete('/posts/:id/like', authMiddleware, async (req, res) => {
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM post_likes WHERE post_id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Like not found' });
+        }
+
+        res.json({ message: 'Post unliked' });
+    } catch (err) {
+        console.error('Unlike post error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// GET /posts/:id/comments - Get post comments (NO AUTH REQUIRED)
+app.get('/posts/:id/comments', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const query = `
+            SELECT c.*, u.username, u.avatar_url
+            FROM post_comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = ?
+            ORDER BY c.created_at ASC
+            LIMIT ? OFFSET ?`;
+        
+        const [comments] = await pool.query(query, [req.params.id, limit, offset]);
+        res.json({ comments });
+    } catch (err) {
+        console.error('Get comments error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// POST /posts/:id/comments - Add comment (AUTH REQUIRED)
+app.post('/posts/:id/comments', authMiddleware, async (req, res) => {
+    try {
+        const { content } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required' });
+        }
+
+        const [result] = await pool.query(
+            'INSERT INTO post_comments (post_id, user_id, content) VALUES (?, ?, ?)',
+            [req.params.id, req.user.id, content]
+        );
+
+        res.json({ message: 'Comment added', commentId: result.insertId });
+    } catch (err) {
+        console.error('Add comment error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// DELETE /posts/comments/:commentId - Delete comment (AUTH REQUIRED, owner only)
+app.delete('/posts/comments/:commentId', authMiddleware, async (req, res) => {
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM post_comments WHERE id = ? AND user_id = ?',
+            [req.params.commentId, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Comment not found or not authorized' });
+        }
+
+        res.json({ message: 'Comment deleted' });
+    } catch (err) {
+        console.error('Delete comment error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
+// Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'post-service' });
 });

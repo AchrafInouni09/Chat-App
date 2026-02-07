@@ -34,6 +34,8 @@ services:
       DB_NAME: ${DB_NAME:-chat_app}
       JWT_SECRET: ${JWT_SECRET}
       AUTH_PORT: 3001
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -59,6 +61,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME:-chat_app}
       USER_PORT: 3002
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -85,6 +89,7 @@ services:
       DB_USER: ${DB_USER:-chat}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME:-chat_app}
+      JWT_SECRET: ${JWT_SECRET}
       CHAT_PORT: 3003
     depends_on:
       mysql:
@@ -316,3 +321,4 @@ volumes:
   mysql_data:
   prometheus_data:
   grafana_data:
+  uploads_data:
