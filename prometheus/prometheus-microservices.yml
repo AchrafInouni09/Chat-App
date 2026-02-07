@@ -1,0 +1,59 @@
+# FIX: Prometheus config for microservices - scrapes all services independently
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - "alerts.yml"
+
+scrape_configs:
+  # Auth Service
+  - job_name: "auth-service"
+    static_configs:
+      - targets:
+          - auth-service:3001
+
+  # User Service
+  - job_name: "user-service"
+    static_configs:
+      - targets:
+          - user-service:3002
+
+  # Chat Service
+  - job_name: "chat-service"
+    static_configs:
+      - targets:
+          - chat-service:3003
+
+  # Post Service
+  - job_name: "post-service"
+    static_configs:
+      - targets:
+          - post-service:3004
+
+  # Friend Service
+  - job_name: "friend-service"
+    static_configs:
+      - targets:
+          - friend-service:3005
+
+  # System metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets:
+          - node-exporter:9100
+
+  - job_name: "mysql"
+    static_configs:
+      - targets:
+          - mysqld-exporter:9104
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets:
+          - cadvisor:8080

@@ -1,0 +1,80 @@
+# FIX: Prometheus alerting rules for critical system monitoring
+groups:
+  - name: service_alerts
+    interval: 30s
+    rules:
+      # Alert when any service is down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute."
+
+      # Alert when backend response time is too high
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(chatapp_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is above 2 seconds for 5 minutes."
+
+  - name: resource_alerts
+    interval: 30s
+    rules:
+      # Alert when container memory usage is too high
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in {{ $labels.name }}"
+          description: "Container {{ $labels.name }} is using more than 90% of memory for 5 minutes."
+
+      # Alert when disk space is low
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.mountpoint }}"
+          description: "Disk space is below 10% on {{ $labels.mountpoint }}."
+
+      # Alert when CPU usage is too high
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 85% for 10 minutes."
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Alert when MySQL is down
+      - alert: MySQLDown
+        expr: mysql_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL database is down"
+          description: "MySQL has been unreachable for more than 1 minute."
+
+      # Alert when too many connections
+      - alert: MySQLTooManyConnections
+        expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL connection usage is high"
+          description: "MySQL is using more than 80% of available connections."

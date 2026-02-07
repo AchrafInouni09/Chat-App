@@ -1,0 +1,318 @@
+# FIX: Microservices Architecture - docker-compose.microservices.yml
+# Each service has single responsibility and communicates via REST APIs
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: chatapp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-chat_app}
+      MYSQL_USER: ${DB_USER:-chat}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USER:-chat}", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend
+
+  # FIX: Auth Service - Microservice for authentication and JWT management
+  auth-service:
+    build: ./services/auth-service
+    container_name: chatapp-auth-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-chat}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-chat_app}
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_PORT: 3001
+    depends_on:
+      mysql:
+        condition: service_healthy
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+      - monitoring
+
+  # FIX: User Service - Microservice for user profile management
+  user-service:
+    build: ./services/user-service
+    container_name: chatapp-user-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-chat}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-chat_app}
+      USER_PORT: 3002
+    depends_on:
+      mysql:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    expose:
+      - "3002"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+      - monitoring
+
+  # FIX: Chat Service - Microservice for real-time messaging
+  chat-service:
+    build: ./services/chat-service
+    container_name: chatapp-chat-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-chat}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-chat_app}
+      CHAT_PORT: 3003
+    depends_on:
+      mysql:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    expose:
+      - "3003"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+      - monitoring
+
+  # FIX: Post Service - Microservice for posts management
+  post-service:
+    build: ./services/post-service
+    container_name: chatapp-post-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-chat}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-chat_app}
+      POST_PORT: 3004
+    depends_on:
+      mysql:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    expose:
+      - "3004"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+      - monitoring
+
+  # FIX: Friend Service - Microservice for friend relationships
+  friend-service:
+    build: ./services/friend-service
+    container_name: chatapp-friend-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-chat}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-chat_app}
+      FRIEND_PORT: 3005
+    depends_on:
+      mysql:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    expose:
+      - "3005"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+      - monitoring
+
+  # FIX: API Gateway - Nginx routing to microservices
+  nginx:
+    image: nginx:alpine
+    container_name: chatapp-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-microservices.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+      - post-service
+      - friend-service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+
+  frontend:
+    build: ./frontend
+    container_name: chatapp-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: chatapp-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus-microservices.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+      - post-service
+      - friend-service
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: chatapp-node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    expose:
+      - "9100"
+    networks:
+      - monitoring
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: chatapp-mysqld-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "${DB_USER:-chat}:${DB_PASSWORD}@(mysql:3306)/${DB_NAME:-chat_app}"
+    expose:
+      - "9104"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - backend
+      - monitoring
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: chatapp-cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    expose:
+      - "8080"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: chatapp-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_AUTH_ANONYMOUS_ENABLED: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana:/etc/grafana/provisioning:ro
+      - ./grafana-dashboard.json:/var/lib/grafana/dashboards/main-dashboard.json:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  backup:
+    image: mysql:8.0
+    container_name: chatapp-backup
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${DB_NAME:-chat_app}
+      MYSQL_USER: ${DB_USER:-chat}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      BACKUP_RETENTION_DAYS: 7
+    volumes:
+      - ./database/backups:/backups
+      - ./database/scripts/backup.sh:/backup.sh:ro
+      - ./database/scripts/restore.sh:/restore.sh:ro
+    command: ["/bin/bash", "-c", "while true; do /backup.sh; sleep 86400; done"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - backend
+
+networks:
+  backend:
+  monitoring:
+
+volumes:
+  mysql_data:
+  prometheus_data:
+  grafana_data:

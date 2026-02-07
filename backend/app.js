@@ -17,6 +17,7 @@ const { auth_mw_token, Priority_login_mw } = require('./src/middlewares/auth_mid
 const { setupSocket } = require('./src/sockets/socketSetup');
 
 const apiKeyRoutes = require('./src/routes/ApiKeysRoutes');
+const { register } = require('./src/metrics/prometheus');
 
 const app = express();
 
@@ -49,7 +50,13 @@ app.use('/api/users', Priority_login_mw, UsersRoutes);
 
 app.get('/', (req, res) => {
     res.send('hello from local host');
-})
+});
+
+// Prometheus metrics endpoint
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+});
 
 
 const server = http.createServer(app);
