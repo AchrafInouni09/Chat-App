@@ -3,10 +3,14 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const axios = require('axios');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.FRIEND_PORT || 3005;
+
+const metricsRegister = new promClient.Registry();
+promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_friend_' });
 
 app.use(cors());
 app.use(express.json());
@@ -275,6 +279,11 @@ app.delete('/friends/remove', verifyToken, async (req, res) => {
 });
 
 // Health check
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metricsRegister.contentType);
+    res.end(await metricsRegister.metrics());
+});
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'friend-service' });
 });

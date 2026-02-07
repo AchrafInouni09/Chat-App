@@ -6,10 +6,15 @@ const axios = require('axios');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.USER_PORT || 3002;
+
+const metricsRegister = new promClient.Registry();
+promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_user_' });
 
 app.use(cors());
 app.use(express.json());
@@ -198,16 +203,67 @@ app.get('/search', verifyToken, async (req, res) => {
 
 // Health check
 // API Keys endpoints (stub - returns empty for now)
-app.get('/keys', verifyToken, (req, res) => {
-    res.json({ apiKeys: [] });
+app.get('/keys', verifyToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, key_prefix, name, rate_limit, created_at FROM api_keys WHERE user_id = ? ORDER BY created_at DESC',
+            [req.user.id]
+        );
+        res.json({ apiKeys: rows });
+    } catch (err) {
+        console.error('Error fetching API keys:', err);
+        res.status(500).json({ message: 'Failed to fetch API keys' });
+    }
 });
 
-app.post('/keys', verifyToken, (req, res) => {
-    res.status(501).json({ message: 'API keys feature not yet implemented in microservices' });
+app.post('/keys', verifyToken, async (req, res) => {
+    try {
+        const { name, rate_limit } = req.body;
+        if (!name) return res.status(400).json({ message: 'Key name is required' });
+
+        const rawKey = crypto.randomBytes(32).toString('hex');
+        const prefix = rawKey.substring(0, 8);
+        const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+
+        const [result] = await pool.query(
+            'INSERT INTO api_keys (user_id, key_prefix, key_hash, name, rate_limit) VALUES (?, ?, ?, ?, ?)',
+            [req.user.id, prefix, keyHash, name, rate_limit || 100]
+        );
+
+        res.status(201).json({
+            apiKey: {
+                id: result.insertId,
+                key: rawKey,
+                prefix: prefix,
+                name: name,
+                rateLimit: rate_limit || 100
+            }
+        });
+    } catch (err) {
+        console.error('Error creating API key:', err);
+        res.status(500).json({ message: 'Failed to create API key' });
+    }
 });
 
-app.delete('/keys/:id', verifyToken, (req, res) => {
-    res.status(501).json({ message: 'API keys feature not yet implemented in microservices' });
+app.delete('/keys/:id', verifyToken, async (req, res) => {
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM api_keys WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'API key not found' });
+        }
+        res.json({ message: 'API key deleted' });
+    } catch (err) {
+        console.error('Error deleting API key:', err);
+        res.status(500).json({ message: 'Failed to delete API key' });
+    }
+});
+
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metricsRegister.contentType);
+    res.end(await metricsRegister.metrics());
 });
 
 app.get('/health', (req, res) => {

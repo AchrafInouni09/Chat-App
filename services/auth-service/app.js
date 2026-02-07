@@ -6,10 +6,15 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.AUTH_PORT || 3001;
+
+// Prometheus metrics
+const metricsRegister = new promClient.Registry();
+promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_auth_' });
 
 app.use(cors());
 app.use(express.json());
@@ -157,6 +162,11 @@ app.post('/verify', (req, res) => {
 });
 
 // Health check
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metricsRegister.contentType);
+    res.end(await metricsRegister.metrics());
+});
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'auth-service' });
 });

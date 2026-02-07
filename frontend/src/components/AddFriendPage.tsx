@@ -35,7 +35,7 @@ const AddFriendPage = () => {
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
     const token = Cookies.get('token');
-    const API_URL = 'https://localhost:3000';
+    const API_URL = '';
 
     useEffect(() => {
         fetchPendingRequests();
@@ -254,7 +254,7 @@ const AddFriendPage = () => {
                     <AddFriendCard
                         key={user.id}
                         username={user.username}
-                        avatarUrl={user.avatar_url ? `${API_URL}/${user.avatar_url}` : ''}
+                        avatarUrl={user.avatar_url ? `/images/${user.avatar_url}` : ''}
                         bio={user.bio || `${user.first_name} ${user.last_name}`}
                         onAdd={() => handleAddFriend(user.username)}
                         isPending={hasSentRequest(user.username)}

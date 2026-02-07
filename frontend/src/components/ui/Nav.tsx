@@ -3,13 +3,22 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
 import Avatar from "./Avatar";
 import Cookies from "js-cookie";
-import { get_ProfileData } from '../../lib/utils';
+import { get_ProfileData, isJwtValid } from '../../lib/utils';
 
 
 
 function Nav() {
   const navigate = useNavigate();
-  const accessToken = Cookies.get("token");
+  const rawToken = Cookies.get("token");
+  const accessToken = rawToken && isJwtValid(rawToken) ? rawToken : null;
+
+  // Clean up invalid/expired tokens
+  useEffect(() => {
+    if (rawToken && !isJwtValid(rawToken)) {
+      Cookies.remove('token');
+      Cookies.remove('username');
+    }
+  }, [rawToken]);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [userInitial, setUserInitial] = useState("ME");
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -30,6 +39,7 @@ function Nav() {
 
   const handleLogout = () => {
     Cookies.remove("token");
+    Cookies.remove("username");
     navigate("/login");
   };
 

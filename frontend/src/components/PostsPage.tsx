@@ -63,6 +63,7 @@ const PostsPage = () => {
 
     let currentUserId: number | null = null;
     let currentUsername: string | null = null;
+    const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
 
     if (token) {
         try {
@@ -73,6 +74,17 @@ const PostsPage = () => {
             console.error('Error decoding token:', e);
         }
     }
+
+    useEffect(() => {
+        if (token) {
+            fetch(`${API_URL}/api/profile/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => { if (data?.user?.avatar_url) setCurrentUserAvatar(data.user.avatar_url); })
+            .catch(() => {});
+        }
+    }, [token]);
 
     useEffect(() => {
         if (activeTab === 'all') {
@@ -426,7 +438,7 @@ const PostsPage = () => {
                     <div className="border-4 border-grunge-dark bg-grunge-white p-4 mb-8 shadow-[4px_4px_0_#0f0f10]">
                         <div className="flex items-center gap-3 mb-4">
                             <Avatar
-                                src={undefined}
+                                src={getAvatarUrl(currentUserAvatar) || undefined}
                                 alt={currentUsername || 'You'}
                                 fallback={currentUsername?.[0]?.toUpperCase() || 'U'}
                                 size="sm"

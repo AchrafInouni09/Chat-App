@@ -15,403 +15,221 @@
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
-    "id": 1,
+    "id": null,
     "links": [],
     "panels": [
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 0
-            },
-            "hiddenSeries": false,
-            "id": 2,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.2.0",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "title": "Service Health (Up/Down)",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
             "targets": [
                 {
-                    "expr": "rate(http_requests_duration_seconds_count[1m])",
-                    "interval": "",
-                    "legendFormat": "{{method}} {{path}}",
-                    "refId": "A"
+                    "expr": "up",
+                    "legendFormat": "{{job}}"
                 }
             ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Request Rate",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
-                },
-                {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "mappings": [
+                        { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+                    ],
+                    "max": 1,
+                    "min": 0,
+                    "thresholds": {
+                        "steps": [
+                            { "color": "red", "value": null },
+                            { "color": "green", "value": 1 }
+                        ]
+                    }
                 }
-            ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
             }
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 0
-            },
-            "hiddenSeries": false,
-            "id": 4,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.2.0",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "title": "Memory Usage (All Services)",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
             "targets": [
                 {
-                    "expr": "rate(http_requests_duration_seconds_sum[1m]) / rate(http_requests_duration_seconds_count[1m])",
-                    "interval": "",
-                    "legendFormat": "{{method}} {{path}}",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Average Response Time",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "s",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "chatapp_auth_process_resident_memory_bytes",
+                    "legendFormat": "auth-service"
                 },
                 {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "chatapp_user_process_resident_memory_bytes",
+                    "legendFormat": "user-service"
+                },
+                {
+                    "expr": "chatapp_chat_process_resident_memory_bytes",
+                    "legendFormat": "chat-service"
+                },
+                {
+                    "expr": "chatapp_post_process_resident_memory_bytes",
+                    "legendFormat": "post-service"
+                },
+                {
+                    "expr": "chatapp_friend_process_resident_memory_bytes",
+                    "legendFormat": "friend-service"
                 }
             ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "bytes"
+                }
             }
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 8
-            },
-            "hiddenSeries": false,
-            "id": 6,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.2.0",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "title": "CPU Usage (All Services)",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
             "targets": [
                 {
-                    "expr": "process_resident_memory_bytes",
-                    "interval": "",
-                    "legendFormat": "Memory Usage",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "Memory Usage",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "bytes",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "rate(chatapp_auth_process_cpu_user_seconds_total[5m])",
+                    "legendFormat": "auth-service"
                 },
                 {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "rate(chatapp_user_process_cpu_user_seconds_total[5m])",
+                    "legendFormat": "user-service"
+                },
+                {
+                    "expr": "rate(chatapp_chat_process_cpu_user_seconds_total[5m])",
+                    "legendFormat": "chat-service"
+                },
+                {
+                    "expr": "rate(chatapp_post_process_cpu_user_seconds_total[5m])",
+                    "legendFormat": "post-service"
+                },
+                {
+                    "expr": "rate(chatapp_friend_process_cpu_user_seconds_total[5m])",
+                    "legendFormat": "friend-service"
                 }
             ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "percentunit"
+                }
             }
         },
         {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "datasource": "prometheus",
-            "fieldConfig": {
-                "defaults": {
-                    "custom": {}
-                },
-                "overrides": []
-            },
-            "fill": 1,
-            "fillGradient": 0,
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 8
-            },
-            "hiddenSeries": false,
-            "id": 8,
-            "legend": {
-                "avg": false,
-                "current": false,
-                "max": false,
-                "min": false,
-                "show": true,
-                "total": false,
-                "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
-            "nullPointMode": "null",
-            "options": {
-                "alertThreshold": true
-            },
-            "percentage": false,
-            "pluginVersion": "7.2.0",
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "title": "MySQL Connections",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
             "targets": [
                 {
-                    "expr": "process_w_user_seconds_total",
-                    "interval": "",
-                    "legendFormat": "CPU Usage",
-                    "refId": "A"
-                }
-            ],
-            "thresholds": [],
-            "timeFrom": null,
-            "timeRegions": [],
-            "timeShift": null,
-            "title": "CPU Usage",
-            "tooltip": {
-                "shared": true,
-                "sort": 0,
-                "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-                "buckets": null,
-                "mode": "time",
-                "name": null,
-                "show": true,
-                "values": []
-            },
-            "yaxes": [
-                {
-                    "format": "percent",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "mysql_global_status_threads_connected",
+                    "legendFormat": "Connected Threads"
                 },
                 {
-                    "format": "short",
-                    "label": null,
-                    "logBase": 1,
-                    "max": null,
-                    "min": null,
-                    "show": true
+                    "expr": "mysql_global_status_threads_running",
+                    "legendFormat": "Running Threads"
                 }
             ],
-            "yaxis": {
-                "align": false,
-                "alignLevel": null
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 }
+                }
+            }
+        },
+        {
+            "title": "Node CPU Usage",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+            "targets": [
+                {
+                    "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                    "legendFormat": "CPU Usage %"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "percent",
+                    "max": 100,
+                    "min": 0
+                }
+            }
+        },
+        {
+            "title": "Node Memory Usage",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+            "targets": [
+                {
+                    "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+                    "legendFormat": "Used Memory"
+                },
+                {
+                    "expr": "node_memory_MemTotal_bytes",
+                    "legendFormat": "Total Memory"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "bytes"
+                }
+            }
+        },
+        {
+            "title": "Container CPU Usage",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+            "targets": [
+                {
+                    "expr": "rate(container_cpu_usage_seconds_total{name=~\"chatapp-.*\"}[5m])",
+                    "legendFormat": "{{name}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "percentunit"
+                }
+            }
+        },
+        {
+            "title": "Container Memory Usage",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+            "targets": [
+                {
+                    "expr": "container_memory_usage_bytes{name=~\"chatapp-.*\"}",
+                    "legendFormat": "{{name}}"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": { "mode": "palette-classic" },
+                    "custom": { "lineWidth": 2, "fillOpacity": 10 },
+                    "unit": "bytes"
+                }
             }
         }
     ],
-    "schemaVersion": 25,
+    "schemaVersion": 30,
     "style": "dark",
-    "tags": [],
-    "templating": {
-        "list": []
-    },
-    "time": {
-        "from": "now-6h",
-        "to": "now"
-    },
+    "tags": ["chatapp", "microservices"],
+    "templating": { "list": [] },
+    "time": { "from": "now-1h", "to": "now" },
     "timepicker": {},
     "timezone": "",
-    "title": "Js Application Dashboard",
-    "uid": "chatapp_dashboard",
+    "title": "ChatApp Microservices Dashboard",
+    "uid": "chatapp-main",
     "version": 1
 }

@@ -6,6 +6,7 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 const app = express();
@@ -20,6 +21,9 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.CHAT_PORT || 3003;
+
+const metricsRegister = new promClient.Registry();
+promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_chat_' });
 
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost', 'https://localhost'],
@@ -250,6 +254,8 @@ app.post('/groups/:id/join', authMiddleware, async (req, res) => {
 });
 
 // Socket.io setup
+const userSockets = new Map(); // userId -> Set of socket ids
+
 io.use((socket, next) => {
     try {
         const token = socket.handshake.auth?.token;
@@ -268,6 +274,26 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.user.username, socket.id);
+
+    // Track user socket
+    const uid = socket.user.id;
+    if (!userSockets.has(uid)) userSockets.set(uid, new Set());
+    userSockets.get(uid).add(socket.id);
+
+    // Auto-join all existing conversations on connect
+    (async () => {
+        try {
+            const [convs] = await pool.query(
+                'SELECT conversation_id FROM conversation_participants WHERE user_id = ?',
+                [uid]
+            );
+            for (const c of convs) {
+                socket.join(`conversation_${c.conversation_id}`);
+            }
+        } catch (err) {
+            console.error('Auto-join error:', err);
+        }
+    })();
 
     // Join conversation room
     socket.on('conversation:join', async ({ conversationId }) => {
@@ -320,8 +346,35 @@ io.on('connection', (socket) => {
 
             const fullMessage = messages[0];
 
+            // Ensure all participants are in the room (handles new conversations)
+            const [participants] = await pool.query(
+                'SELECT user_id FROM conversation_participants WHERE conversation_id = ?',
+                [conversationId]
+            );
+            for (const p of participants) {
+                const sockets = userSockets.get(p.user_id);
+                if (sockets) {
+                    for (const sid of sockets) {
+                        const s = io.sockets.sockets.get(sid);
+                        if (s) s.join(`conversation_${conversationId}`);
+                    }
+                }
+            }
+
             // Emit to conversation room
             io.to(`conversation_${conversationId}`).emit('message:new', fullMessage);
+
+            // Notify participants to refresh conversation list
+            for (const p of participants) {
+                if (p.user_id !== socket.user.id) {
+                    const sockets = userSockets.get(p.user_id);
+                    if (sockets) {
+                        for (const sid of sockets) {
+                            io.to(sid).emit('conversation:update', { conversationId });
+                        }
+                    }
+                }
+            }
         } catch (err) {
             console.error('Send message error:', err);
         }
@@ -329,10 +382,20 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.user.username);
+        const sockets = userSockets.get(uid);
+        if (sockets) {
+            sockets.delete(socket.id);
+            if (sockets.size === 0) userSockets.delete(uid);
+        }
     });
 });
 
 // Health check
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metricsRegister.contentType);
+    res.end(await metricsRegister.metrics());
+});
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'chat-service' });
 });

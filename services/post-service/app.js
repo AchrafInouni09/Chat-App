@@ -6,10 +6,14 @@ const axios = require('axios');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.POST_PORT || 3004;
+
+const metricsRegister = new promClient.Registry();
+promClient.collectDefaultMetrics({ register: metricsRegister, prefix: 'chatapp_post_' });
 
 app.use(cors());
 app.use(express.json());
@@ -317,6 +321,11 @@ app.delete('/posts/comments/:commentId', authMiddleware, async (req, res) => {
 });
 
 // Health check
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', metricsRegister.contentType);
+    res.end(await metricsRegister.metrics());
+});
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'post-service' });
 });

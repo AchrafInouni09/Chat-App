@@ -96,6 +96,9 @@ const ChatPage = () => {
 
         socketRef.current.on("connect", () => console.log("Socket connected"));
         socketRef.current.on("connect_error", (err: Error) => console.error("Socket error:", err.message));
+        socketRef.current.on("conversation:update", () => {
+            fetchConversations();
+        });
 
         return () => {
             socketRef.current?.disconnect();
