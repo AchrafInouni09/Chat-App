@@ -16,7 +16,7 @@ A modern, full-stack social web application built with **microservices architect
 |--------|------|------------------|
 | **Mouad** | **Frontend Developer & Product Owner (PO)** | - Frontend architecture & UI/UX implementation<br>- React + TypeScript development<br>- Product vision & feature prioritization<br>- Responsive design with Tailwind CSS<br>- WebSocket client integration |
 | **Achraf** | **Backend Developer & Database Architect** | - Database schema design & optimization<br>- MySQL setup and migrations<br>- JWT authentication implementation<br>- WebSocket (Socket.io) integration & real-time chat<br>- Backend services & API development<br>- Database performance tuning |
-| **You** | **DevOps Engineer & Technical Lead** | - Infrastructure setup & containerization<br>- Docker & docker-compose orchestration<br>- Prometheus & Grafana monitoring<br>- Nginx reverse proxy & SSL configuration<br>- CI/CD & deployment automation<br>- Technical architecture decisions |
+| **Oussama** | **DevOps Engineer & Technical Lead** | - Infrastructure setup & containerization<br>- Docker & docker-compose orchestration<br>- Prometheus & Grafana monitoring<br>- Nginx reverse proxy & SSL configuration<br>- CI/CD & deployment automation<br>- Technical architecture decisions |
 | **Nesta** | **Backend Developer & Project Manager (PM)** | - Backend services development<br>- API integration & testing<br>- Code reviews & quality assurance<br>- Team coordination & sprint planning<br>- Problem-solving & debugging<br>- Progress tracking & communication |
 
 ### Role Distribution Rationale
@@ -847,12 +847,12 @@ trancendence/
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register new user | ❌ |
-| POST | `/api/auth/login` | Login user | ❌ |
+| POST | `/api/auth/register` | Register new user | 
+| POST | `/api/auth/login` | Login user |
 | POST | `/api/auth/logout` | Logout user | ✅ |
 | POST | `/api/auth/2fa/enable` | Enable 2FA | ✅ |
 | POST | `/api/auth/2fa/verify` | Verify 2FA code | ✅ |
-| GET | `/api/auth/health` | Health check | ❌ |
+| GET | `/api/auth/health` | Health check |
 
 ### User Endpoints
 
@@ -1102,6 +1102,6 @@ make clean
 
 ---
 
-**Built with ❤️ by Mouad, Achraf, DevOps Engineer, and Nesta**
+**Built with ❤️ by Mouad, Achraf, Oussama, and Nesta**
 
 _ft_transcendence - 42 School - 2026_
