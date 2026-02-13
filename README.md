@@ -15,7 +15,7 @@ A modern, full-stack social web application built with **microservices architect
 | Member | Role | Responsibilities |
 |--------|------|------------------|
 | **Mouad** | **Frontend Developer & Product Owner (PO)** | - Frontend architecture & UI/UX implementation<br>- React + TypeScript development<br>- Product vision & feature prioritization<br>- Responsive design with Tailwind CSS<br>- WebSocket client integration |
-| **Achraf** | **Backend Developer & Database Architect** | - Database schema design & optimization<br>- MySQL setup and migrations<br>- Backend services implementation<br>- API development & data modeling<br>- Database performance tuning |
+| **Achraf** | **Backend Developer & Database Architect** | - Database schema design & optimization<br>- MySQL setup and migrations<br>- JWT authentication implementation<br>- WebSocket (Socket.io) integration & real-time chat<br>- Backend services & API development<br>- Database performance tuning |
 | **You** | **DevOps Engineer & Technical Lead** | - Infrastructure setup & containerization<br>- Docker & docker-compose orchestration<br>- Prometheus & Grafana monitoring<br>- Nginx reverse proxy & SSL configuration<br>- CI/CD & deployment automation<br>- Technical architecture decisions |
 | **Nesta** | **Backend Developer & Project Manager (PM)** | - Backend services development<br>- API integration & testing<br>- Code reviews & quality assurance<br>- Team coordination & sprint planning<br>- Problem-solving & debugging<br>- Progress tracking & communication |
 
