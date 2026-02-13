@@ -132,29 +132,64 @@ Based on the **ft_transcendence subject requirements** (Section II.1.1):
 ### Microservices Architecture
 
 ```
-┌─────────────┐
-│   Nginx     │ ← HTTPS Reverse Proxy (Port 443)
-│  (Gateway)  │
-└──────┬──────┘
-       │
-       ├──────────────┬──────────────┬──────────────┬──────────────┐
-       │              │              │              │              │
-┌──────▼──────┐ ┌────▼────┐ ┌───────▼──────┐ ┌────▼────┐ ┌──────▼──────┐
-│   Frontend  │ │  Auth   │ │     User     │ │  Chat   │ │   Friend    │
-│   (React)   │ │ Service │ │   Service    │ │ Service │ │   Service   │
-│  Port 5173  │ │ :3001   │ │    :3002     │ │  :3003  │ │    :3005    │
-└─────────────┘ └────┬────┘ └──────┬───────┘ └────┬────┘ └──────┬──────┘
-                     │             │              │             │
-┌────────────────────┴─────────────┴──────────────┴─────────────┴─────────┐
-│                            MySQL Database                                │
-│                             Port: 3306                                   │
-└──────────────────────────────────────────────────────────────────────────┘
+                     ┌──────────────────┐
+                     │  Client Browser  │
+                     │  (First Contact) │
+                     └────────┬─────────┘
+                              │
+                              │ HTTPS (Port 443)
+                              │ ALL requests go here first
+                              ▼
+                     ┌─────────────────┐
+                     │   Nginx Gateway │ ← Single Entry Point
+                     │  Reverse Proxy  │   (API Gateway + SSL)
+                     │   Port 443      │
+                     └────────┬────────┘
+                              │
+                              │ Routes based on URL path
+                              │
+       ┌──────────────────────┼──────────────────────┬──────────────┐
+       │                      │                      │              │
+       │ / (root)             │ /api/auth/*          │ /api/users/* │
+       ▼                      ▼                      ▼              ▼
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐ ┌────────────┐
+│   Frontend   │      │     Auth     │      │     User     │ │   Other    │
+│   (React)    │      │   Service    │      │   Service    │ │  Services  │
+│  Port 5173   │      │    :3001     │      │    :3002     │ │  :3003-05  │
+└──────────────┘      └──────┬───────┘      └──────┬───────┘ └─────┬──────┘
+                              │                     │               │
+                              │                     │               │
+           ┌──────────────────┴─────────────────────┴───────────────┴────────┐
+           │                      MySQL Database                             │
+           │                        Port: 3306                               │
+           └────────────────────────────────────────────────────────────────┘
 
 ┌─────────────┐         ┌─────────────┐
 │ Prometheus  │ ──────→ │   Grafana   │
 │   :9090     │         │    :3001    │
 └─────────────┘         └─────────────┘
 ```
+
+### 🔄 Request Flow (Important!)
+
+**Clients ALWAYS talk to Nginx first**, never directly to services:
+
+1. **Initial Page Load**:
+   ```
+   Browser → Nginx (443) → Frontend (React SPA) → Browser renders app
+   ```
+
+2. **API Requests** (after frontend loads):
+   ```
+   React App → Nginx (443) → Backend Service → Database → Response
+   ```
+
+3. **Why Nginx First?**
+   - ✅ SSL/TLS termination (HTTPS)
+   - ✅ Single entry point (no CORS issues)
+   - ✅ Backend services hidden & secured
+   - ✅ Load balancing & caching capability
+   - ✅ Request routing & path rewriting
 
 ### Service Responsibilities
 
