@@ -1,6 +1,43 @@
+# =============================================================================
 # FIX: Microservices Architecture - docker-compose.microservices.yml
-# Each service has single responsibility and communicates via REST APIs
+# =============================================================================
+# PM Documentation: This orchestration file manages all microservices and 
+# infrastructure components for the Chat Application.
+#
+# Architecture Overview:
+# - 5 Business Microservices (auth, user, chat, post, friend)
+# - 1 API Gateway (Nginx) for request routing
+# - 1 Frontend Application (React + Vite)
+# - 1 Database (MySQL 8.0)
+# - 4 Monitoring Services (Prometheus, Grafana, Node Exporter, cAdvisor)
+# - 1 Backup Service (Automated daily backups)
+#
+# Service Startup Order (managed by depends_on + healthcheck):
+# 1. MySQL (database foundation)
+# 2. Auth Service (authentication provider - required by all other services)
+# 3. User, Chat, Post, Friend Services (business logic)
+# 4. Nginx (API gateway for routing external requests)
+# 5. Frontend (user interface)
+# 6. Monitoring Stack (Prometheus + Grafana + exporters)
+#
+# Networks:
+# - backend: Used by application services and database
+# - monitoring: Used by Prometheus and exporters
+#
+# Health Checks: All critical services have health checks to ensure proper
+# startup sequencing and automatic recovery from failures.
+# =============================================================================
+
 services:
+  # ===========================================================================
+  # DATABASE SERVICE
+  # ===========================================================================
+  # PM Note: MySQL 8.0 - Central data store for all microservices
+  # Purpose: Stores users, conversations, messages, posts, friendships
+  # Port: 3306 (internal only, not exposed to host)
+  # Data Persistence: mysql_data volume for permanent storage
+  # Health Check: Ensures database is ready before dependent services start
+  # ===========================================================================
   mysql:
     image: mysql:8.0
     container_name: chatapp-mysql
@@ -22,7 +59,18 @@ services:
     networks:
       - backend
 
-  # FIX: Auth Service - Microservice for authentication and JWT management
+  # ===========================================================================
+  # AUTH SERVICE - Authentication & JWT Management
+  # ===========================================================================
+  # PM Note: Core authentication microservice - handles all user authentication
+  # Responsibilities:
+  # - User login with JWT token generation (24-hour expiry)
+  # - User registration with password hashing and avatar upload
+  # - Token verification endpoint (used by all other services)
+  # Port: 3001 (internal), accessible via Nginx at /api/auth/*
+  # Dependencies: MySQL (for user credentials storage)
+  # Critical: All other business services depend on this for authentication
+  # ===========================================================================
   auth-service:
     build: ./services/auth-service
     container_name: chatapp-auth-service
@@ -50,7 +98,19 @@ services:
       - backend
       - monitoring
 
-  # FIX: User Service - Microservice for user profile management
+  # ===========================================================================
+  # USER SERVICE - User Profile Management
+  # ===========================================================================
+  # PM Note: Manages user profiles and account information
+  # Responsibilities:
+  # - User profile retrieval (GET /profile/me, /profile/:id)
+  # - Profile updates (bio, firstName, lastName, etc.)
+  # - Avatar management and serving
+  # - User search and discovery
+  # Port: 3002 (internal), accessible via Nginx at /api/users/*
+  # Dependencies: MySQL (user data), Auth Service (token verification)
+  # Volume: Shares uploads_data with auth-service for avatar storage
+  # ===========================================================================
   user-service:
     build: ./services/user-service
     container_name: chatapp-user-service
@@ -79,7 +139,20 @@ services:
       - backend
       - monitoring
 
-  # FIX: Chat Service - Microservice for real-time messaging
+  # ===========================================================================
+  # CHAT SERVICE - Real-Time Messaging
+  # ===========================================================================
+  # PM Note: Handles all messaging and real-time communication features
+  # Responsibilities:
+  # - WebSocket connections via Socket.io for real-time messaging
+  # - Conversation management (direct and group chats)
+  # - Message history and persistence
+  # - Online/offline user status tracking
+  # - Message delivery and read receipts
+  # Port: 3003 (internal), accessible via Nginx at /api/chat/* and /socket.io/*
+  # Dependencies: MySQL (messages/conversations), Auth Service (token verification)
+  # Technology: Socket.io for WebSocket connections
+  # ===========================================================================
   chat-service:
     build: ./services/chat-service
     container_name: chatapp-chat-service
@@ -107,7 +180,19 @@ services:
       - backend
       - monitoring
 
-  # FIX: Post Service - Microservice for posts management
+  # ===========================================================================
+  # POST SERVICE - Content & Posts Management
+  # ===========================================================================
+  # PM Note: Manages user-generated content and social features
+  # Responsibilities:
+  # - Post creation, retrieval, update, and deletion
+  # - Like/unlike functionality
+  # - Comments management
+  # - Public/private post visibility
+  # - User timeline and feed generation
+  # Port: 3004 (internal), accessible via Nginx at /api/posts/*
+  # Dependencies: MySQL (posts/likes/comments), Auth Service (token verification)
+  # ===========================================================================
   post-service:
     build: ./services/post-service
     container_name: chatapp-post-service
@@ -134,7 +219,19 @@ services:
       - backend
       - monitoring
 
-  # FIX: Friend Service - Microservice for friend relationships
+  # ===========================================================================
+  # FRIEND SERVICE - Social Relationships Management
+  # ===========================================================================
+  # PM Note: Handles all friend-related operations and social graph
+  # Responsibilities:
+  # - Friend request sending and acceptance
+  # - Friend list management
+  # - Block/unblock users
+  # - Friend status tracking (pending, accepted, blocked)
+  # - Social graph queries (mutual friends, suggestions)
+  # Port: 3005 (internal), accessible via Nginx at /api/friends/*
+  # Dependencies: MySQL (friendships table), Auth Service (token verification)
+  # ===========================================================================
   friend-service:
     build: ./services/friend-service
     container_name: chatapp-friend-service
@@ -161,7 +258,23 @@ services:
       - backend
       - monitoring
 
-  # FIX: API Gateway - Nginx routing to microservices
+  # ===========================================================================
+  # NGINX - API Gateway & Reverse Proxy
+  # ===========================================================================
+  # PM Note: Central entry point for all external requests
+  # Responsibilities:
+  # - Routes requests to appropriate microservices based on URL path
+  # - SSL/TLS termination for HTTPS
+  # - Load balancing across service instances
+  # - Static file serving and caching
+  # Routing Rules:
+  #   /api/auth/*    -> auth-service:3001
+  #   /api/users/*   -> user-service:3002
+  #   /api/chat/*    -> chat-service:3003
+  #   /api/posts/*   -> post-service:3004
+  #   /api/friends/* -> friend-service:3005
+  # Ports: 80 (HTTP), 443 (HTTPS) - only ports exposed to host
+  # ===========================================================================
   nginx:
     image: nginx:alpine
     container_name: chatapp-nginx
@@ -186,6 +299,20 @@ services:
     networks:
       - backend
 
+  # ===========================================================================
+  # FRONTEND - React Application
+  # ===========================================================================
+  # PM Note: User interface built with React + TypeScript + Vite
+  # Features:
+  # - Authentication pages (login, register)
+  # - User profile management
+  # - Real-time chat interface
+  # - Posts feed and creation
+  # - Friend management
+  # Technology Stack: React 18, TypeScript, Vite, Tailwind CSS, Socket.io-client
+  # Build: Multi-stage Docker build with nginx for serving static files
+  # Port: 80 (internal), served through main Nginx gateway
+  # ===========================================================================
   frontend:
     build: ./frontend
     container_name: chatapp-frontend
@@ -200,6 +327,19 @@ services:
     networks:
       - backend
 
+  # ===========================================================================
+  # PROMETHEUS - Metrics Collection & Monitoring
+  # ===========================================================================
+  # PM Note: Time-series database for collecting and storing metrics
+  # Responsibilities:
+  # - Scrapes metrics from all microservices (/metrics endpoints)
+  # - Stores metrics data (30-day retention)
+  # - Evaluates alerting rules
+  # - Provides query interface for Grafana
+  # Targets: All 5 microservices + node-exporter + mysqld-exporter + cAdvisor
+  # Port: 9090 (accessible via browser for PromQL queries)
+  # Data Retention: 30 days
+  # ===========================================================================
   prometheus:
     image: prom/prometheus:latest
     container_name: chatapp-prometheus
@@ -223,6 +363,18 @@ services:
     networks:
       - monitoring
 
+  # ===========================================================================
+  # NODE EXPORTER - System Metrics
+  # ===========================================================================
+  # PM Note: Collects hardware and OS-level metrics from the host system
+  # Metrics Collected:
+  # - CPU usage, load average
+  # - Memory and swap usage
+  # - Disk I/O and space
+  # - Network traffic
+  # - System uptime
+  # Port: 9100 (scraped by Prometheus)
+  # ===========================================================================
   node-exporter:
     image: prom/node-exporter:latest
     container_name: chatapp-node-exporter
@@ -241,6 +393,18 @@ services:
     networks:
       - monitoring
 
+  # ===========================================================================
+  # MYSQLD EXPORTER - Database Metrics
+  # ===========================================================================
+  # PM Note: Collects MySQL database performance metrics
+  # Metrics Collected:
+  # - Query performance and slow queries
+  # - Connection counts and status
+  # - Table locks and deadlocks
+  # - Replication status
+  # - Buffer pool usage
+  # Port: 9104 (scraped by Prometheus)
+  # ===========================================================================
   mysqld-exporter:
     image: prom/mysqld-exporter:latest
     container_name: chatapp-mysqld-exporter
@@ -257,6 +421,18 @@ services:
       - backend
       - monitoring
 
+  # ===========================================================================
+  # CADVISOR - Container Metrics
+  # ===========================================================================
+  # PM Note: Collects resource usage and performance metrics for all containers
+  # Metrics Collected:
+  # - CPU, memory, and disk usage per container
+  # - Network I/O per container
+  # - Container lifecycle events
+  # - Resource limits and throttling
+  # Purpose: Helps identify resource bottlenecks and scaling needs
+  # Port: 8080 (scraped by Prometheus)
+  # ===========================================================================
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: chatapp-cadvisor
@@ -273,6 +449,19 @@ services:
     networks:
       - monitoring
 
+  # ===========================================================================
+  # GRAFANA - Metrics Visualization & Dashboards
+  # ===========================================================================
+  # PM Note: Web-based analytics and monitoring dashboards
+  # Features:
+  # - Pre-configured dashboards for microservices monitoring
+  # - Real-time metrics visualization from Prometheus
+  # - Alert management and notifications
+  # - Custom dashboard creation
+  # Access: http://localhost:3001
+  # Default Credentials: admin / (set via GF_SECURITY_ADMIN_PASSWORD)
+  # Data Source: Prometheus (auto-provisioned)
+  # ===========================================================================
   grafana:
     image: grafana/grafana:latest
     container_name: chatapp-grafana
@@ -293,6 +482,19 @@ services:
     networks:
       - monitoring
 
+  # ===========================================================================
+  # BACKUP SERVICE - Automated Database Backups
+  # ===========================================================================
+  # PM Note: Automated MySQL database backup for disaster recovery
+  # Functionality:
+  # - Daily automated backups (runs every 24 hours)
+  # - Compressed SQL dumps (gzip format)
+  # - 7-day retention policy (configurable via BACKUP_RETENTION_DAYS)
+  # - Manual restore capability via restore.sh script
+  # Backup Location: ./database/backups/
+  # Backup Format: backup_YYYYMMDD_HHMMSS.sql.gz
+  # Recovery: Use ./database/scripts/restore.sh <backup_file>
+  # ===========================================================================
   backup:
     image: mysql:8.0
     container_name: chatapp-backup
@@ -314,10 +516,28 @@ services:
     networks:
       - backend
 
+# =============================================================================
+# NETWORKS
+# =============================================================================
+# PM Note: Isolated networks for security and organization
+# - backend: Application services + database communication
+# - monitoring: Prometheus + exporters (isolated from application traffic)
+# =============================================================================
 networks:
   backend:
+    driver: bridge
   monitoring:
+    driver: bridge
 
+# =============================================================================
+# VOLUMES
+# =============================================================================
+# PM Note: Persistent data storage across container restarts
+# - mysql_data: Database files (users, messages, posts, etc.)
+# - prometheus_data: Metrics time-series data (30-day retention)
+# - grafana_data: Dashboard configurations and user settings
+# - uploads_data: User-uploaded files (avatars, attachments)
+# =============================================================================
 volumes:
   mysql_data:
   prometheus_data:

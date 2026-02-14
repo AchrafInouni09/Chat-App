@@ -10,7 +10,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-BACKUP_FILE=$1
+BACKUP_FILE=$1ws
 
 if [ ! -f "$BACKUP_FILE" ]; then
     echo "Error: Backup file not found: $BACKUP_FILE"
