@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 
@@ -20,6 +20,7 @@ const AuthForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { register, handleSubmit } = useForm<RegistrationData>()
@@ -47,6 +48,12 @@ const AuthForm = () => {
     let response: Response;
 
     if (!isLogin) {
+      // Check if terms are accepted
+      if (!acceptedTerms) {
+        setError("You must accept the Terms of Service and Privacy Policy to register");
+        setIsSubmitting(false);
+        return;
+      }
       // Registration
       const formData = new FormData();
       formData.append('firstname', data.firstname || '');
@@ -235,6 +242,28 @@ const AuthForm = () => {
                         </div>
                     )}
 
+                    {!isLogin && (
+                        <div className="flex items-start gap-3 mt-2">
+                            <input
+                                type="checkbox"
+                                id="acceptTerms"
+                                checked={acceptedTerms}
+                                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                className="mt-1 w-4 h-4 accent-grunge-accent cursor-pointer"
+                            />
+                            <label htmlFor="acceptTerms" className="text-xs text-grunge-gray cursor-pointer">
+                                I agree to the{' '}
+                                <Link to="/terms-of-service" target="_blank" className="text-grunge-accent underline hover:text-grunge-dark">
+                                    Terms of Service
+                                </Link>
+                                {' '}and{' '}
+                                <Link to="/privacy-policy" target="_blank" className="text-grunge-accent underline hover:text-grunge-dark">
+                                    Privacy Policy
+                                </Link>
+                            </label>
+                        </div>
+                    )}
+
                     <button
                         disabled={isSubmitting}
                         className="w-full p-4 mt-2 bg-grunge-accent text-grunge-white border-2 border-grunge-dark font-mono font-bold uppercase cursor-pointer hover:shadow-[4px_4px_0_#0f0f10] active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -245,7 +274,10 @@ const AuthForm = () => {
             </div>
 
             <div className="text-grunge-gray text-xs mt-2 leading-tight">
-                By connecting, you agree to the <span className="text-grunge-accent underline cursor-pointer">Protocol_Manifesto</span>.
+                By connecting, you agree to the{' '}
+                <Link to="/terms-of-service" className="text-grunge-accent underline hover:text-grunge-dark">Terms of Service</Link>
+                {' '}and{' '}
+                <Link to="/privacy-policy" className="text-grunge-accent underline hover:text-grunge-dark">Privacy Policy</Link>.
                 Connection is encrypted end-to-end.
             </div>
         </div>

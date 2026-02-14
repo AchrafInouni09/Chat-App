@@ -12,6 +12,8 @@ import AdminDashboard from "./components/AdminDashboard.tsx";
 import PostsPage from "./components/PostsPage.tsx";
 import ApiKeysPage from "./components/ApiKeysPage.tsx";
 import ComponentsPage from "./components/ComponentsPage.tsx";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage.tsx";
+import TermsOfServicePage from "./components/TermsOfServicePage.tsx";
 
 import { checkRole, isJwtValid } from "./lib/utils";
 import Cookies from "js-cookie";
@@ -53,6 +55,8 @@ function App() {
       <Route path="/friends" element={<ProtectedRoute role={["user", "admin"]}><FriendsPage /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute role={["admin"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute role={["user", "admin"]}><ApiKeysPage /></ProtectedRoute>} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms-of-service" element={<TermsOfServicePage />} />
     </Routes>
   )
 }

@@ -34,6 +34,12 @@ const AuthPage = () => {
                     Identity <span className="text-grunge-accent stroke-text">Check</span>
                 </h1>
                 <AuthForm />
+                
+                <div className="mt-6 text-center text-sm text-muted-foreground">
+                    <Link to="/privacy-policy" className="hover:text-grunge-accent transition-colors">Privacy Policy</Link>
+                    <span className="mx-2">|</span>
+                    <Link to="/terms-of-service" className="hover:text-grunge-accent transition-colors">Terms of Service</Link>
+                </div>
             </div>
 
             {/* Background Decoration */}
