@@ -79,6 +79,32 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Get salt endpoint for login
+app.post('/get-salt', async (req, res) => {
+    const { username } = req.body;
+    
+    if (!username) {
+        return res.status(400).json({ message: 'username is required' });
+    }
+
+    try {
+        const [rows] = await pool.query(
+            'SELECT password_salt FROM users WHERE username = ?',
+            [username]
+        );
+
+        if (rows.length === 0) {
+            // Return a fake salt to prevent username enumeration
+            return res.json({ salt: '$2a$10$' + 'x'.repeat(22) });
+        }
+
+        res.json({ salt: rows[0].password_salt });
+    } catch (err) {
+        console.error('Get salt error:', err);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+
 // Register endpoint with avatar support
 app.post('/register', upload.single('avatar'), async (req, res) => {
     // Support both field name formats
@@ -119,10 +145,13 @@ app.post('/register', upload.single('avatar'), async (req, res) => {
         // Handle avatar - store filename only (like original backend)
         const avatarUrl = req.file ? req.file.filename : null;
 
-        // Insert new user with avatar
+        // Extract salt from bcrypt hash (format: $2a$10$<22-char-salt><31-char-hash>)
+        const passwordSalt = password.substring(0, 29);
+
+        // Insert new user with avatar and salt
         const [result] = await pool.query(
-            'INSERT INTO users (first_name, last_name, username, email, password_hash, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [firstname, lastname, username, email, password, role, avatarUrl]
+            'INSERT INTO users (first_name, last_name, username, email, password_hash, password_salt, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [firstname, lastname, username, email, password, passwordSalt, role, avatarUrl]
         );
 
         // Fetch and return the created user

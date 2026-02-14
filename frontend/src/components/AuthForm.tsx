@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import bcrypt from 'bcryptjs';
 
 
 interface RegistrationData {
@@ -54,13 +55,18 @@ const AuthForm = () => {
         setIsSubmitting(false);
         return;
       }
+      
+      // Hash password before sending to backend
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(data.password, salt);
+      
       // Registration
       const formData = new FormData();
       formData.append('firstname', data.firstname || '');
       formData.append('lastname', data.lastname || '');
       formData.append('username', data.username);
       formData.append('email', data.email || '');
-      formData.append('password', data.password);
+      formData.append('password', hashedPassword);
       formData.append('role', 'user');
 
       if (avatarFile) formData.append('avatar', avatarFile);
@@ -70,11 +76,28 @@ const AuthForm = () => {
         body: formData,
       });
     } else {
-      // Login
+      // Login - First get salt from backend
+      const saltResponse = await fetch("/api/auth/get-salt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: data.username }),
+      });
+      
+      if (!saltResponse.ok) {
+        setError("Failed to authenticate");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const { salt } = await saltResponse.json();
+      
+      // Hash password with retrieved salt
+      const hashedPassword = await bcrypt.hash(data.password, salt);
+      
       response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: data.username, password: data.password }),
+        body: JSON.stringify({ username: data.username, password: hashedPassword }),
       });
     }
 

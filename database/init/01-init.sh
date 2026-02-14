@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    password_salt VARCHAR(255) NOT NULL,
     avatar_url VARCHAR(255) DEFAULT NULL,
     bio TEXT DEFAULT NULL,
     role ENUM('admin', 'user') DEFAULT 'user',
